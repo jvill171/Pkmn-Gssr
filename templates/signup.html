@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container m-3 p-3">
+        <h1>Sign Up</h1>
+        <hr>
+        <form id="login-user-form" method="POST">
+            {% include '_form.html' %}
+            <button class="btn btn-primary" type="submit">Submit</button>
+        </form>
+        <br>
+        <small><a href="/login">Already have an account?</a></small>
+    </div>
+{% endblock %}
