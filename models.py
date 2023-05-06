@@ -1,10 +1,11 @@
 
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
-from random import randint
+from pkmn_list import pokemon_list
 
 bcrypt = Bcrypt()
 db = SQLAlchemy()
+
 
 class User(db.Model):
     """Users table"""
@@ -18,20 +19,22 @@ class User(db.Model):
     username = db.Column(db.Text, nullable=False, unique=True)
     password = db.Column(db.Text, nullable=False)
     email    = db.Column(db.Text, nullable=False, unique=True)
-    fav_pkmn = db.Column(db.Integer, nullable=True)
+    fav_pkmn = db.Column(db.Text, nullable=False)
+    img_url  = db.Column(db.Text, default='/static/images/pokeball.png')
 
     @classmethod
-    def signup(cls, username, email, password, image_url):
+    def signup(cls, username, email, password, img_url, favorite):
         """Sign up user.
         Hashes password and adds user to system.
         """
-
         hashed_pwd = bcrypt.generate_password_hash(password).decode('UTF-8')
 
         user = User(
-            username=username,
-            email=email,
-            password=hashed_pwd
+            username = username,
+            password = hashed_pwd,
+            email = email,
+            fav_pkmn = favorite,
+            img_url = img_url
         )
 
         db.session.add(user)
@@ -62,7 +65,7 @@ class Game(db.Model):
     __tablename__ = "pkmn_games"
 
     id          = db.Column(db.Integer, primary_key = True)
-    user_id     = db.Column(db.Text, db.ForeignKey('users.id', ondelete='cascade'))
+    user_id     = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='cascade'))
     score       = db.Column(db.Integer)
     # Game mode 0 if default, 1 if Alt game mode
     game_mode   = db.Column(db.Integer)
