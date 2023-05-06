@@ -3,7 +3,7 @@ import os
 from flask import Flask, render_template, request, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
-from my_secrets import MY_SECRET_KEY
+from my_secrets import MY_SECRET_KEY, DB_NAME
 
 
 # from forms import 
@@ -14,7 +14,7 @@ CURR_USER_KEY = "curr_user"
 app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = (
-    os.environ.get('DATABASE_URL', 'postgresql:///pkmn_gssr'))
+    os.environ.get('DATABASE_URL', DB_NAME))
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False
