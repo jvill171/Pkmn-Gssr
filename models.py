@@ -13,7 +13,7 @@ class User(db.Model):
 
     def __repr__ (self):
         u = self
-        return f"<User id={u.id},  username={u.username},  email={u.email}>"
+        return f"<User id={u.id}, username={u.username}, email={u.email}, fav_pkmn={u.fav_pkmn}>"
 
     id       = db.Column(db.Integer, primary_key = True)
     username = db.Column(db.Text, nullable=False, unique=True)
