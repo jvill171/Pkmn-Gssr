@@ -89,7 +89,7 @@ def signup():
     form.fav_pkmn.choices = [(idx, f"{idx} - {pkmn}") for (idx, pkmn) in enumerate(['None'] + pokemon_list[:])]
 
     if form.validate_on_submit():
-        dex_number = int(form.fav_pkmn.data)
+        dex_number = form.fav_pkmn.data
 
         # Get image URL to send to User.signup
         if(dex_number == 0):
@@ -104,12 +104,12 @@ def signup():
                 flash("An error occursed with your favorite pokemon. Default image set.", "danger")
         
         # Sign up the user using signup classmethod
-        try:    
+        try:
             user = User.signup(
-                username = form.username.data, 
+                username = form.username.data,
                 password = form.password.data,
                 email    = form.email.data,
-                favorite = pokemon_list[dex_number] if 0 < dex_number <= len(pokemon_list) else "No favorite pokemon",
+                favorite = pokemon_list[dex_number - 1] if 0 < dex_number < len(pokemon_list) else "No favorite pokemon",
                 img_url  = image_url
             )
             db.session.commit()
