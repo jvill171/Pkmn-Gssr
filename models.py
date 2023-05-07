@@ -1,4 +1,5 @@
 
+from flask import flash
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
 from pkmn_list import pokemon_list
@@ -52,11 +53,14 @@ class User(db.Model):
         """
 
         user = cls.query.filter_by(username=username).first()
-
+        
         if user:
             is_auth = bcrypt.check_password_hash(user.password, password)
             if is_auth:
                 return user
+            flash("Invalid password", "danger")
+        else:
+            flash("Invalid username", "danger")
 
         return False
 
