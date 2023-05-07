@@ -17,28 +17,34 @@
                 <li class="nav-item ms-2">
                     <a class="nav-link" href="/leaderboard"><b>Leaderboard</b></a>
                 </li>
-                {% if session['username'] %}
-                    <li class="nav-item ms-2">
-                        <a class="nav-link" href="#"><b>Game Mode</b></a>
-                    </li>
-                    <li class="nav-item ms-2">
-                        <img class="pfp-navbar" src="{{user.img_url}}" alt="Your profile picture">
-                    </li>
-                    <li class="nav-item ms-2">
-                        <a class="nav-link" href="/logout"><b>Logout</b></a>
-                    </li>
-                {% else %}
+                {% if not g.user %}
                     <li class="nav-item ms-2">
                         <a class="nav-link" href="/signup"><b>Sign Up</b></a>
                     </li>
                     <li class="nav-item ms-2">
                         <a class="nav-link" href="/login"><b>Login</b></a>
                     </li>
+                {% else %}
+                    <li class="nav-item ms-2">
+                        <a class="nav-link" href="#"><b>Game Mode</b></a>
+                    </li>
+                    <li class="nav-item ms-2">
+                        <img class="pfp-navbar" src="{{g.user.img_url}}" alt="Your profile picture">
+                    </li>
+                    <li class="nav-item ms-2">
+                        <a class="nav-link" href="/logout"><b>Logout</b></a>
+                    </li>
                 {% endif %}
             </ul>
         </div>
     </nav>
-    {% block content %}{% endblock %}
+    <div class="container">
+        {% for category, message in get_flashed_messages(with_categories=True) %}
+            <div class="alert alert-{{ category }} border border-{{ category }} mt-2 rounded-0">{{ message }}</div>
+        {% endfor %}
+        
+        {% block content %}{% endblock %}
+    </div>
     
 </body>
 </html>
