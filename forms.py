@@ -8,7 +8,7 @@ class UserAddForm(FlaskForm):
 
     username = StringField('Username', validators=[DataRequired()])
     email = StringField('E-mail', validators=[DataRequired(), Email()])
-    fav_pkmn = SelectField('Favorite Pokemon')
+    fav_pkmn = SelectField('Favorite Pokemon', coerce=int)
     password = PasswordField('Password', validators=[
         Length(min=6),
         EqualTo('confirm', message='Passwords must match')])
