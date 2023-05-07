@@ -1,6 +1,6 @@
 import os
 import requests
-from flask import Flask, render_template, request, flash, redirect, session, g
+from flask import Flask, render_template, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 from forms import UserAddForm, LoginForm, EditUserForm
@@ -65,8 +65,12 @@ def login():
     form=LoginForm()
     
     if form.validate_on_submit():
-        # Login stuff
-        print('logged in!')
+        user = User.authenticate(form.username.data, form.password.data)
+
+        if user:
+            do_login(user)
+            flash(f"Hello, {user.username}!", "success")
+            return redirect("/")
 
     return render_template('login.html', form=form)
 
@@ -74,8 +78,6 @@ def login():
 @app.route("/logout")
 def logout():
     """Handle a user logging out"""
-    
-    # Do logout stuff
     do_logout()
     flash("Logged out!", "success")
     return redirect('/')
@@ -114,8 +116,14 @@ def signup():
             )
             db.session.commit()
 
-        except IntegrityError:
-            flash("Username already taken", "danger")
+        except IntegrityError as e:
+            # Determine if either username or email already exists.
+            # Only first error caught & used for flash messages
+            msg = e.orig.diag.message_detail
+            idx = msg.find(')')
+            msg = f"{msg[5:idx]} already exists!".capitalize()
+
+            flash(msg, "danger")
             return render_template('signup.html', form=form)
         
         # Log in & redirect to homepage
