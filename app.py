@@ -8,7 +8,7 @@ from models import User, Game
 from random import randint
 
 from my_secrets import MY_SECRET_KEY, DB_NAME
-from pkmn_list import pokemon_list
+from pkmn_list import pokemon_list, pokemon_types
 
 # from forms import 
 from models import db, connect_db
@@ -24,7 +24,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = (
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False
-app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = True
+app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', MY_SECRET_KEY)
 toolbar = DebugToolbarExtension(app)
 
@@ -56,7 +56,10 @@ def do_logout():
 @app.route("/")
 def homepage():
     """Homepage - Games take place here"""
-    return render_template('base.html')
+    pkmn=pokemon_list
+    pkmn_types = pokemon_types
+    print(pkmn_types)
+    return render_template('game.html', pkmn=pkmn, pkmn_types=pkmn_types)
 
 
 @app.route("/login", methods=['GET', 'POST'])
@@ -93,7 +96,7 @@ def signup():
     if form.validate_on_submit():
         dex_number = form.fav_pkmn.data
 
-        # Get image URL to send to User.signup
+        # Get image URL to send to User.signup()
         if(dex_number == 0):
             image_url = None
         else:
