@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container text-center">
+    <div class="row">
+        <h1 class="my-3">Who's that Pokemon</h1>
+    </div>
+    <button id="new-game-btn" class="btn btn-lg btn-primary mb-3">New Game</button>
+    <!-- Hidden list of all pokemon -->
+    <section id="all-pkmn" style="display:none;">
+        <ul>
+            {% for p in pkmn %}
+                <li>{{p}}</li>
+            {% endfor %}
+        </ul>
+    </section>
+
+    <div class="row">
+        <ul class="pkmn-types">
+            {% for t in pkmn_types %}
+                <li>{{t}}</li>
+            {% endfor %}
+        </ul>
+        <p id="non-poke-warn" style="display:none;">Not a pokemon!</p>
+    </div>
+    <div class="row">
+        <input type="text" name="pkmn-guess" id="pkmn-guess" placeholder="Its ...">
+        <button id="guess-btn">Submit</button>
+        <div class="suggestions">
+            <ul>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.js"></script>
+<script src='static/scripts.js'></script>
+
+{% endblock %}
