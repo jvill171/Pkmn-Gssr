@@ -8,7 +8,7 @@ from models import User, Game
 from random import randint
 
 from my_secrets import MY_SECRET_KEY, DB_NAME
-from pkmn_list import pokemon_list, pokemon_types
+from pkmn_list import pokemon_list
 
 # from forms import 
 from models import db, connect_db
@@ -56,10 +56,8 @@ def do_logout():
 @app.route("/")
 def homepage():
     """Homepage - Games take place here"""
-    pkmn=pokemon_list
-    pkmn_types = pokemon_types
-    print(pkmn_types)
-    return render_template('game.html', pkmn=pkmn, pkmn_types=pkmn_types)
+    pkmn = pokemon_list
+    return render_template('game.html', pkmn=pkmn)
 
 
 @app.route("/login", methods=['GET', 'POST'])
