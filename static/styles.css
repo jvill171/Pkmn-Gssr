@@ -44,7 +44,7 @@
     cursor: pointer;
   }
 
-  .pkmn-types > *,   .pkmn-colors > *{
+  .pkmn-types > *,   .pkmn-colors > *, .pkmn-eggs > *{
     display: inline-block;
     width: 70px;
     padding: 0 5px;
@@ -54,12 +54,26 @@
     border-radius: 5px;
     text-shadow: black 0 0 5px;
   }
+  .pkmn-eggs > *{
+    width: 120px;
+  }
 
-  .pkmn-shapes img{
+  .pkmn-shapes img, #guess-table img{
     background-color: white;
     border: 1px solid black;
     border-radius: 50%;
     width: 45px;
+    height: 45px;
+    padding: 5px;
+    margin: 5px;
+  }
+
+  .pkmn-gens > li{
+    background-color: rgb(45, 45, 45);
+    display: inline-block;
+    width: 50px;
+    border: 1px solid white;
+    border-radius: 5px;
     padding: 5px;
     margin: 5px;
   }
@@ -68,3 +82,10 @@
     scale: 110%;
   }
   
+  th, td{
+    border: 1px solid white;
+  }
+  th{
+    color: black;
+    background-color: white;
+  }
