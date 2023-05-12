@@ -7,60 +7,74 @@
     </div>
 
     <button id="new-game-btn" class="btn btn-lg btn-primary mb-3">New Game</button>
-
+    <div class="row">
+        <p class="fs-4 text-warning">Score: <span>0</span></p>
+    </div>
     <!-- Hidden list of all pokemon -->
-    <section id="all-pkmn" style="display:none;">
+    <section id="all-pkmn" class="hidden-item">
         <ul>
             {% for p in pkmn %}
                 <li>{{p}}</li>
             {% endfor %}
         </ul>
     </section>
-    <div class="reference-data">
-        <div class="row">
-            <ul class="pkmn-gens"></ul>
+
+
+    <div id="load-msg" class="row">
+        <p>Selecting Random Pokemon . . .</p>
+    </div>
+
+    <div id="game" class="row hidden-item">
+        <div class="row"><p id="non-poke-warn">Not a pokemon!</p></div>
+
+        <form class="row" autocomplete="off">
+            <input type="text" name="pkmn-guess" id="pkmn-guess" placeholder="Its ...">
+            <button id="guess-btn">Submit</button>
+            <div class="suggestions">
+                <ul>
+                </ul>
+            </div>
+        </form>
+        <hr>
+    
+        <div class="reference-data">
+            <div class="row">
+                <ul class="pkmn-gens"></ul>
+            </div>
+            <div class="row">
+                <ul class="pkmn-types"></ul>
+            </div>
+            <div class="row">
+                <ul class="pkmn-shapes"></ul>
+            </div>
+            <div class="row">
+                <ul class="pkmn-colors"></ul>
+            </div>
+            <div class="row">
+                <ul class="pkmn-eggs"></ul>
+            </div>
         </div>
+    
         <div class="row">
-            <ul class="pkmn-types"></ul>
-        </div>
-        <div class="row">
-            <ul class="pkmn-shapes"></ul>
-        </div>
-        <div class="row">
-            <ul class="pkmn-colors"></ul>
-        </div>
-        <div class="row">
-            <ul class="pkmn-eggs"></ul>
+            <table id="guess-table">
+                <thead>
+                    <th>Name</th>
+                    <th>Image</th>
+                    <th>Gen</th>
+                    <th>Egg 1</th>
+                    <th>Egg 2</th>
+                    <th>Color</th>
+                    <th>Shape</th>
+                    <th>Type 1</th>
+                    <th>Type 2</th>
+                </thead>
+                <tbody class="all-guesses"></tbody>
+            </table>
         </div>
     </div>
 
-    <div class="row"><p id="non-poke-warn" style="display:none;">Not a pokemon!</p></div>
-
-    <form class="row" autocomplete="off">
-        <input type="text" name="pkmn-guess" id="pkmn-guess" placeholder="Its ...">
-        <button id="guess-btn">Submit</button>
-        <div class="suggestions">
-            <ul>
-            </ul>
-        </div>
-    </form>
-
-    <div class="row">
-        <table id="guess-table">
-            <thead>
-                <th>Name</th>
-                <th>Image</th>
-                <th>Gen</th>
-                <th>Egg 1</th>
-                <th>Egg 2</th>
-                <th>Color</th>
-                <th>Shape</th>
-                <th>Type 1</th>
-                <th>Type 2</th>
-            </thead>
-            <tbody class="all-guesses"></tbody>
-        </table>
-    </div>
+    
+    
 
 </div>
 {% endblock %}
