@@ -2,7 +2,7 @@ const input = document.querySelector("#pkmn-guess")
 const suggestions = document.querySelector(".suggestions ul")
 const mySuggestions = document.getElementsByClassName("has-suggestions")
 const guessbtn = document.querySelector("#guess-btn")
-const nonPoke = document.querySelector("#non-poke-warn")
+const newGameBtn = document.querySelector("#new-game-btn")
 
 const genList = document.querySelector(".pkmn-gens")
 const typeList = document.querySelector(".pkmn-types")
@@ -14,6 +14,7 @@ const pkmnGenerated = new Event("pokemon-generated");
 
 const BASE_API_URL = "https://pokeapi.co/api/v2"
 let tgp;
+let guessList = []
 
 
 const typeColor_dict ={
@@ -109,46 +110,71 @@ suggestions.addEventListener('mouseup', useSuggestion)
 // Submit a pokemon
 guessbtn.addEventListener('click', (e)=>{
     e.preventDefault()
-    nonPoke.style.display = "None"
-
-    if (allPokemon.includes(input.value)){
+    let $noPokeWarn = $("#non-poke-warn")
+    $noPokeWarn.addClass("hidden-item")
+    
+    if(guessList.includes(input.value.toLowerCase())){
+        $noPokeWarn
+            .removeClass("hidden-item")
+            .text("You've already guessed that pokemon!")
+    }
+    else if (allPokemon.includes(input.value)){
         // Attempt to compare guess to stored pokemon
         makeGuess(input.value)
         input.value = ''
     }
     else{
-        nonPoke.style.display = "block"
+        $noPokeWarn
+            .removeClass("hidden-item")
+            .text("Thats not a real pokemon!")
     }
     
 })
+
+newGameBtn.addEventListener('click',()=>{makeNewGame()})
+
+function makeNewGame(){
+    $("#new-game-btn").prop("disabled", true)
+    setTimeout(() => {
+        $("#new-game-btn").prop("disabled", false)
+    }, 5000);
+    // Hide game & show loading message
+    $("#load-msg").toggleClass("hidden-item")
+    $("#game").toggleClass("hidden-item")
+
+    generateRandPkmn()
+    resetGame();
+
+}
+
+function resetGame(){
+    guessList = []
+    $(".all-guesses").empty()
+    $(".good-item").addClass("neutral-item").removeClass("good-item")
+    $(".bad-item").addClass("neutral-item").removeClass("bad-item")
+
+}
 
 // FUNCTIONS FOR STYLING
 // ********************************************************
 function makeCapitalized(word){
     return word.charAt(0).toUpperCase() + word.slice(1)
 }
-// Element is true for the pokemon to guess
-function makeGood(elem){
-    elem.css({"border":"4px solid green", "font-weight":"bold"})
-    // ADD A DROPSHADOW TO MAKE IT GLOW GREEN
-}
-// Element is NOT true for the pokemon to guess
-function makeBad(elem){
-    elem.css({"border":"2px solid red", "opacity" : ".5"})
-}
 
 // FUNCTIONS FOR GENERATING GAME'S ICON LIST
 // ********************************************************
-// Pokemon Types
+// Pokemon Generations
 async function getGens(){
     for(idx in allGens){
         let newLI = document.createElement('li')
         newLI.innerText = allGens[idx]
-        newLI.classList.add(`data-${allGens[idx]}`)
+        newLI.classList.add(`Gen-${allGens[idx]}`)
+        newLI.classList.add("neutral-item")
         genList.append(newLI)
     }
 }
 
+// Pokemon Types
 async function getTypes(){
     let nonTypes = ['unknown', 'shadow']
 
@@ -162,7 +188,8 @@ async function getTypes(){
 
             let newLI = document.createElement('li')
             newLI.innerText = `${capType}`
-            newLI.classList.add(`data-${capType}`)
+            newLI.classList.add(`Type-${capType}`)
+            newLI.classList.add("neutral-item")
             
             typeColor = typeColor_dict[`${capType}`]
             newLI.style.backgroundColor = typeColor
@@ -178,7 +205,8 @@ async function getShapes(){
     for(shape of resp.data.results){
         let newIMG = document.createElement('img')
         newIMG.src = `/static/images/shapes/${shape.name}.png`
-        newIMG.classList.add(`data-${shape.name}`)
+        newIMG.classList.add(`Shape-${shape.name}`)
+        newIMG.classList.add("neutral-item")
         shapeList.append(newIMG)
     }
 }
@@ -191,9 +219,14 @@ async function getColors(){
 
         let newLI = document.createElement('li')
         newLI.innerText = `${capColor}`
-        newLI.classList.add(`data-${capColor}`)
-        
-        newLI.style.backgroundColor = capColor != "Brown" ? `${capColor}`: typeColor_dict['Rock']
+        newLI.classList.add(`Color-${capColor}`)
+        newLI.classList.add("neutral-item")
+        if(["Brown", "Green"].includes(capColor)){
+            newLI.style.backgroundColor = capColor != "Brown" ? typeColor_dict['Grass'] : typeColor_dict['Rock']
+        }
+        else{
+            newLI.style.backgroundColor = `${capColor}`
+        }
         colorlist.append(newLI)
     }
 }
@@ -205,7 +238,8 @@ async function getEggs(){
 
         let newLI = document.createElement('li')
         newLI.innerText = `${capEgg}`
-        newLI.classList.add(`data-${capEgg}`)
+        newLI.classList.add(`Egg-${capEgg}`)
+        newLI.classList.add("neutral-item")
         
         newLI.style.backgroundColor = eggColor_dict[capEgg]
         egglist.append(newLI)
@@ -220,6 +254,7 @@ function genReferenceData(){
     getColors();
     getEggs();
 }
+
 // FUNCTIONS FETCHING POKEMON DATA
 // ********************************************************
 // Pokemon types retrieved here
@@ -277,8 +312,9 @@ function generateRandPkmn(){
                 .then(guessPKMN =>{
                     tgp = guessPKMN
                     document.dispatchEvent(pkmnGenerated)
-                    // HIDE GAME UNTIL RANDOM POKEMON IS SELECTED
-                    // *********************************************************
+                    
+                    $("#load-msg").toggleClass("hidden-item")
+                    $("#game").toggleClass("hidden-item")
                 })
 }
 // Make a guess
@@ -297,6 +333,7 @@ function makeGuess(pkmnName){
 // Add guess to guesses table
 function addGuessData(gData){
     let newTR = document.createElement('tr')
+    guessList.push(gData["Name"].toLowerCase())
     for (let k in gData){
         let newTD = document.createElement('td')
         let newIMG = document.createElement('img')
@@ -315,8 +352,12 @@ function addGuessData(gData){
         else{
             if(["Type1", "Type2", "Color"].includes(k)){
                 if(k == "Color"){
-                    newTD.style.backgroundColor = gData[k] != "brown" ? `${gData[k]}`: typeColor_dict['Rock']
-                    newTD.style.textShadow = "black 0 0 5px"
+                    if(["Brown", "Green"].includes(gData[k])){
+                        newTD.style.backgroundColor = gData[k] != "brown" ? typeColor_dict['Grass'] : typeColor_dict['Rock']
+                    }
+                    else{
+                        newTD.style.backgroundColor = gData[k]
+                    }
                 }
                 else{
                     let typeColor = makeCapitalized(gData[k])
@@ -334,32 +375,51 @@ function addGuessData(gData){
 function checkGuessData(gData){
     
     for (let k in gData){
-        if(k != "Image"){
-            let $elem = $(`.data-${gData[k]}`)
+        if(!["Image", "Name"].includes(k)){
+            let $elem;
+            
+            if (["Type1", "Type2"].includes(k)){
+                $elem = $(`.Type-${gData[k]}`)
 
-            if (gData[k] == tgp[k]){
-                $(`.data-${gData[k]}`)
-                console.log(`SAME ${k} - ${gData[k]}`)
-
-                // Game won
-                if(k == "Name"){
-                    // Victory script goes here
-                    break;
+                if([tgp["Type1"], tgp["Type2"] ].includes(gData[k])){
+                    $elem.addClass("good-item")
                 }
                 else{
-                    makeGood($elem)
-                    // makeGood()
+                    $elem.addClass("bad-item")
                 }
+            }
+            else if (["Egg1", "Egg2"].includes(k)){
+                $elem = $(`.Egg-${gData[k]}`)
+                if([tgp["Egg1"], tgp["Egg2"]].includes(gData[k])){
+                    $elem.addClass("good-item")
+                }
+                else{
+                    $elem.addClass("bad-item")
+                }
+            }
+            else if(["Color", "Shape", "Gen"].includes(k)){
                 
+                $elem = $(`.${k}-${gData[k]}`)
+                if(tgp[k] == gData[k]){
+                    $elem.addClass("good-item")
+                }
+                else{
+                    $elem.addClass("bad-item")
+                }
             }
             else{
-                // console.log(`${gData[k]} ${tgp[k]}`)
-                makeBad($elem)
-                console.log("DIFF")
+                // Do nothing: Name, Image
             }
+            $elem.removeClass("neutral-item")
         }
     }
+    if(gData["Name"] == tgp["Name"]){
+        // Add victory script here
+    }
 }
+// function gameWin(){
+    
+// }
 
 // Start building page components
 // ===================================
@@ -371,6 +431,6 @@ document.addEventListener('DOMContentLoaded', function(event) {
 
 // Make guess once a pokemon to guess have been generated
 // FOR TESTING PURPOSES
-document.addEventListener("pokemon-generated", (e)=>{
-    makeGuess("Gardevoir")
-})
+// document.addEventListener("pokemon-generated", (e)=>{
+//     makeGuess("Gardevoir")
+// })
