@@ -3,17 +3,19 @@
     border-radius: 50%;
     max-width: 50px;
 }
-#pkmn-guess{
+#pkmn-guess, #guess-btn{
     position:relative;
-    left:25.45%;
-    width: 50%;
+    left:50%;
+    width: 100%;
+    margin: 5px 0;
+    transform: translate(-50%, 0);
 }
 
 .suggestions > ul{
     position:relative;
-    left:25%;
-    width: 51%;
     padding: 0;
+    z-index: 100;
+    width: 41%;
 }
 
   ::placeholder{
@@ -34,9 +36,9 @@
     background-color: rgb(68, 95, 136);
     list-style: none;
     margin:0;
-    border-style: none solid none solid;
+    border-style: solid none none none;
     border-color: black;
-    border-width: 2px;
+    border-width: 1px;
   }
 
   .suggestions ul li:hover {
@@ -106,3 +108,4 @@
     border: 2px solid rgb(201, 0, 0);
     opacity: .5;
   }
+  
