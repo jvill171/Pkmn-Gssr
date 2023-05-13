@@ -11,6 +11,7 @@ const colorlist = document.querySelector(".pkmn-colors")
 const egglist = document.querySelector(".pkmn-eggs")
 
 const pkmnGenerated = new Event("pokemon-generated");
+const pkmnGuessAdded = new Event("pkmn-guess-made");
 
 const BASE_API_URL = "https://pokeapi.co/api/v2"
 let tgp;
@@ -22,13 +23,13 @@ const typeColor_dict ={
     "Grass": "#7AC74C",      "Ice": "#96D9D6",    "Fighting": "#C22E28",   "Poison": "#A33EA1",
     "Ground": "#E2BF65",     "Flying": "#A98FF3", "Psychic": "#F95587",    "Bug": "#A6B91A",
     "Rock": "#B6A136",       "Ghost": "#735797",  "Dragon": "#6F35FC",     "Dark": "#705746",
-    "Steel": "#B7B7CE",      "Fairy": "#D685AD"}
+    "Steel": "#B7B7CE",      "Fairy": "#D685AD", "None": "#FFFFFF"}
 
 const eggColor_dict ={
     "Monster": "#F54269",     "Water1": "#0000FF",   "Bug": "#89C499",      "Flying": "#60C9E0",
     "Ground": "#B89858",      "Fairy": "#B889C4",    "Plant": "#009423",   "Humanshape": "#C7A28F",
     "Water3": "#8080FF",     "Mineral": "#FF2B2B", "Indeterminate": "#5A728F",    "Water2": "#5454FF",
-    "Ditto": "#B561FF",       "Dragon": "#735797",  "No-eggs": "#454545"}
+    "Ditto": "#B561FF",       "Dragon": "#735797",  "No-eggs": "#454545",}
 
 const allGens = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII",]
 
@@ -118,21 +119,27 @@ guessbtn.addEventListener('click', (e)=>{
             .removeClass("hidden-item")
             .text("You've already guessed that pokemon!")
     }
-    else if (allPokemon.includes(input.value)){
-        // Attempt to compare guess to stored pokemon
+    else if (allPokemon.includes(makeCapitalized(input.value.toLowerCase()))){
+        // Valid guess
         makeGuess(input.value)
-        input.value = ''
+        $("#pkmn-guess").prop("disabled", true).css("color", "white")
+        input.value = `Guessing ${input.value}...` 
     }
     else{
         $noPokeWarn
             .removeClass("hidden-item")
             .text("Thats not a real pokemon!")
     }
-    
+})
+
+document.addEventListener("pkmn-guess-made",()=>{
+    $("#pkmn-guess").prop("disabled", false).css("color", "black")
+    input.value = ''
 })
 
 newGameBtn.addEventListener('click',()=>{makeNewGame()})
 
+// Clear board and select a new pokemon
 function makeNewGame(){
     $("#new-game-btn").prop("disabled", true)
     setTimeout(() => {
@@ -185,18 +192,14 @@ async function getTypes(){
         if(!(nonTypes.includes(type.name))){
 
             capType = makeCapitalized(type.name)
-
-            let newLI = document.createElement('li')
-            newLI.innerText = `${capType}`
-            newLI.classList.add(`Type-${capType}`)
-            newLI.classList.add("neutral-item")
-            
-            typeColor = typeColor_dict[`${capType}`]
-            newLI.style.backgroundColor = typeColor
-
-            typeList.append(newLI)
+            $(".pkmn-types").append(
+                `<li class=" Type-${capType} neutral-item" style="background-color: ${typeColor_dict[`${capType}`]};">${capType}</li>`)
         }
     }
+    $(".pkmn-types").append(
+        `<li class="neutral-item Type-None" style="background-color: #000000;">Single</li>`
+    )
+    
 }
 
 // Pokemon Shapes
@@ -205,8 +208,8 @@ async function getShapes(){
     for(shape of resp.data.results){
         let newIMG = document.createElement('img')
         newIMG.src = `/static/images/shapes/${shape.name}.png`
-        newIMG.classList.add(`Shape-${shape.name}`)
         newIMG.classList.add("neutral-item")
+        newIMG.classList.add(`Shape-${shape.name}`)
         shapeList.append(newIMG)
     }
 }
@@ -216,18 +219,16 @@ async function getColors(){
     let resp = await axios.get(`${BASE_API_URL}/pokemon-color`)
     for(color of resp.data.results){
         const capColor = makeCapitalized(color.name)
-
-        let newLI = document.createElement('li')
-        newLI.innerText = `${capColor}`
-        newLI.classList.add(`Color-${capColor}`)
-        newLI.classList.add("neutral-item")
+        let pkmnBgColor;
+        
         if(["Brown", "Green"].includes(capColor)){
-            newLI.style.backgroundColor = capColor != "Brown" ? typeColor_dict['Grass'] : typeColor_dict['Rock']
+            pkmnBgColor = capColor != "Brown" ? typeColor_dict['Grass'] : typeColor_dict['Rock']
         }
         else{
-            newLI.style.backgroundColor = `${capColor}`
+            pkmnBgColor = capColor
         }
-        colorlist.append(newLI)
+        $('.pkmn-colors').append(
+            `<li class="neutral-item Color-${capColor}" style="background-color: ${pkmnBgColor};">${capColor}</li>`)
     }
 }
 // Pokemon Egg Groups
@@ -236,13 +237,8 @@ async function getEggs(){
     for(egg of resp.data.results){
         const capEgg = makeCapitalized(egg.name)
 
-        let newLI = document.createElement('li')
-        newLI.innerText = `${capEgg}`
-        newLI.classList.add(`Egg-${capEgg}`)
-        newLI.classList.add("neutral-item")
-        
-        newLI.style.backgroundColor = eggColor_dict[capEgg]
-        egglist.append(newLI)
+        $(".pkmn-eggs").append(
+            `<li class="neutral-item Egg-${capEgg}" style="background-color: ${eggColor_dict[capEgg]}">${capEgg}</li>`)
     }
 }
 
@@ -319,6 +315,7 @@ function generateRandPkmn(){
 }
 // Make a guess
 function makeGuess(pkmnName){
+    clearSuggestion();
     myName =  makeCapitalized(pkmnName.toLowerCase())
     if (allPokemon.includes(myName)){
         dexNum = allPokemon.indexOf(myName)+1
@@ -327,6 +324,7 @@ function makeGuess(pkmnName){
             .then(myGuess => {
                 addGuessData(myGuess)
                 checkGuessData(myGuess)
+                document.dispatchEvent(pkmnGuessAdded)
             })
     }
 }
@@ -353,7 +351,7 @@ function addGuessData(gData){
             if(["Type1", "Type2", "Color"].includes(k)){
                 if(k == "Color"){
                     if(["Brown", "Green"].includes(gData[k])){
-                        newTD.style.backgroundColor = gData[k] != "brown" ? typeColor_dict['Grass'] : typeColor_dict['Rock']
+                        newTD.style.backgroundColor = gData[k] != "Brown" ? typeColor_dict['Grass'] : typeColor_dict['Rock']
                     }
                     else{
                         newTD.style.backgroundColor = gData[k]
