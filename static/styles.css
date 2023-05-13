@@ -103,6 +103,6 @@
     box-shadow: rgb(170, 255, 182) 0 0 10px;
   }
   .bad-item{
-    border: 2px solid red;
+    border: 2px solid rgb(201, 0, 0);
     opacity: .5;
   }
