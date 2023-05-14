@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SelectField
-from wtforms.validators import DataRequired, Email, Length, EqualTo
+from wtforms.validators import DataRequired, Email, Length, EqualTo, Optional
 
 
 class UserAddForm(FlaskForm):
@@ -25,11 +25,13 @@ class EditUserForm(FlaskForm):
     """Form for editing users."""
 
     email = StringField('E-mail', validators=[DataRequired(), Email()])
-    fav_pkmn = SelectField('Favorite Pokemon')
+    fav_pkmn = SelectField('Favorite Pokemon', coerce=int)
 
     new_password = PasswordField('New Password', validators=[
         Length(min=6),
-        EqualTo('confirm', message='New Passwords must match')])
-    confirm  = PasswordField('Repeat New Password')
+        EqualTo('confirm', message='New Passwords must match'),
+        Optional()])
+    confirm  = PasswordField('Repeat New Password',
+                             validators=[Optional()])
 
     password = PasswordField('Current password', validators=[Length(min=6)])
