@@ -112,7 +112,7 @@ def signup():
                 username = form.username.data,
                 password = form.password.data,
                 email    = form.email.data,
-                favorite = pokemon_list[dex_number - 1] if 0 < dex_number < len(pokemon_list) else "No favorite pokemon",
+                favorite = dex_number,
                 img_url  = image_url
             )
             db.session.commit()
@@ -136,8 +136,43 @@ def signup():
 
 @app.route("/profile/<int:user_id>", methods=['GET', 'POST'])
 def user_profile(user_id):
-    form=EditUserForm()
-    return render_template('profile.html', form=form)
+    """Allow user to update their email, password, and/or favorite pokemon (updates profile picture)"""
+    user = User.query.get_or_404(user_id)
+    form=EditUserForm(obj=user)
+
+    choices = [(idx, f"{idx} - {pkmn}") for (idx, pkmn) in enumerate(['None'] + pokemon_list[:])]
+    form.fav_pkmn.choices = choices
+    
+    if form.validate_on_submit():
+        # Validate user
+        user = User.authenticate(g.user.username, form.password.data)
+        if(user):
+            if(form.new_password.data):
+                pwd = form.new_password.data
+                User.update_pass(user, pwd)
+            if(form.fav_pkmn.data != g.user.fav_pkmn):
+                g.user.fav_pkmn = form.fav_pkmn.data
+                
+                # Update image URL
+                if(form.fav_pkmn.data == 0):
+                    g.user.img_url = None
+                else:
+                    try:
+                        resp = requests.get(f"{BASE_API_URL}/pokemon/{form.fav_pkmn.data}")
+                        img_data = resp.json()['sprites']['other']['official-artwork']
+                        image_url = img_data['front_shiny'] if (randint(1, 512) == 512) else img_data['front_default']
+                    except:
+                        image_url = None
+                        flash("An error occursed with your favorite pokemon. Default image set.", "danger")
+                    g.user.img_url = image_url
+                
+            g.user.email = form.email.data
+        db.session.commit()
+
+    # Must be after form validation or will not update
+    junk, fav_pokemon = choices[g.user.fav_pkmn]
+    
+    return render_template('profile.html', form=form, fav_pokemon=fav_pokemon)
 
 @app.route("/leaderboard")
 def leaderboard():
