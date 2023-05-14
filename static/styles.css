@@ -3,19 +3,22 @@
     border-radius: 50%;
     max-width: 50px;
 }
-#pkmn-guess, #guess-btn{
+#pkmn-guess, #guess-btn, .suggestions{
     position:relative;
     left:50%;
     width: 100%;
     margin: 5px 0;
     transform: translate(-50%, 0);
 }
-
+.suggestions{
+  transform:translate(-50%, -10px);
+  width: 95%;
+  z-index: 100;
+}
 .suggestions > ul{
-    position:relative;
-    padding: 0;
-    z-index: 100;
-    width: 41%;
+  position:absolute;
+  padding: 0;
+  width: 100%;
 }
 
   ::placeholder{
@@ -24,6 +27,7 @@
   :focus {
     outline:none;
     border-color: black;
+    background-color: rgb(45, 109, 206);
   }
   input {
     padding:0.4rem;
@@ -39,6 +43,7 @@
     border-style: solid none none none;
     border-color: black;
     border-width: 1px;
+    height: 1.5em;
   }
 
   .suggestions ul li:hover {
@@ -48,7 +53,7 @@
 
   .pkmn-types > *,   .pkmn-colors > *, .pkmn-eggs > *{
     display: inline-block;
-    width: 70px;
+    width: 80px;
     padding: 0 5px;
     margin: 5px;
     border: 1px solid black;
