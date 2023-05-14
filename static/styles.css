@@ -1,14 +1,16 @@
 .pfp-navbar{
-    border: 1px solid black;
-    border-radius: 50%;
-    max-width: 50px;
+  border: 1px solid black;
+  border-radius: 50%;
+  max-width: 50px;
+  background: rgb(255,255,255);
+  background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(63,152,251,1) 100%);
 }
 #pkmn-guess, #guess-btn, .suggestions{
-    position:relative;
-    left:50%;
-    width: 100%;
-    margin: 5px 0;
-    transform: translate(-50%, 0);
+  position:relative;
+  left:51%;
+  width: 100%;
+  margin: 5px 0;
+  transform: translate(-50%, 0);
 }
 .suggestions{
   transform:translate(-50%, -10px);
