@@ -8,7 +8,8 @@
 
     <button id="new-game-btn" class="btn btn-lg btn-primary mb-3">New Game</button>
     <div class="row">
-        <p class="fs-4 text-warning">Score: <span>0</span></p>
+        <p class="fs-4 text-warning">Guesses: <span class="score">0</span> / 20</p>
+        <p class="end-status fs-4 hidden-item">Victory!</p>
     </div>
     <!-- Hidden list of all pokemon -->
     <section id="all-pkmn" class="hidden-item">
@@ -25,36 +26,47 @@
     </div>
 
     <div id="game" class="row hidden-item">
-        <div class="row hidden-item"><p id="non-poke-warn">Not a pokemon!</p></div>
+        <div class="row"><p id="non-poke-warn" class="hidden-item">Not a pokemon!</p></div>
 
-        <form class="row" autocomplete="off">
-            <input type="text" name="pkmn-guess" id="pkmn-guess" placeholder="Its ...">
-            <button id="guess-btn">Submit</button>
-            <div class="suggestions">
-                <ul>
-                </ul>
+        <form id="guess-form" class="row pb-2" autocomplete="off">
+            <div class="d-flex flex-column">
+                <div>
+                    <input class="border-0 rounded-5 p-2" type="text" name="pkmn-guess" id="pkmn-guess" placeholder="Its ..." style>
+                    <div class="suggestions">
+                        <ul>
+                        </ul>
+                    </div>
+                </div>
+                <div>
+                    <button class="btn btn-light rounded-0 rounded-5 p-2" id="guess-btn">Submit</button>
+                </div>
             </div>
         </form>
         <hr>
-    
-        <div class="reference-data">
-            <div class="row">
-                <ul class="pkmn-gens"></ul>
+        <button class="btn w-100 btn-dark" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-ref-sheet" aria-expanded="true" aria-controls="collapse-ref-sheet">
+            Reference
+        </button>
+        <div class="collapse.show collapse show" id="collapse-ref-sheet">
+            <div class="reference-data ">
+                <div class="row">
+                    <ul class="pkmn-gens"></ul>
+                </div>
+                <div class="row">
+                    <ul class="pkmn-types"></ul>
+                </div>
+                <div class="row">
+                    <ul class="pkmn-shapes"></ul>
+                </div>
+                <div class="row">
+                    <ul class="pkmn-colors"></ul>
+                </div>
+                <div class="row">
+                    <ul class="pkmn-eggs"></ul>
+                </div>
             </div>
-            <div class="row">
-                <ul class="pkmn-types"></ul>
-            </div>
-            <div class="row">
-                <ul class="pkmn-shapes"></ul>
-            </div>
-            <div class="row">
-                <ul class="pkmn-colors"></ul>
-            </div>
-            <div class="row">
-                <ul class="pkmn-eggs"></ul>
-            </div>
-        </div>
-    
+        </div>  
+        <hr>
+        
         <div class="row">
             <table id="guess-table">
                 <thead>
