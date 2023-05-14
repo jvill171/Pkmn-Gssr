@@ -1,1 +1,35 @@
 {% extends 'base.html' %}
+
+{% block content %}
+<h1 class="my-3">{{g.user.username}}'s profile</h1>
+
+<p><b class="h5 text-primary">E-mail</b>: {{g.user.email}}</p>
+<p><b class="h5 text-primary">Favorite Pokemon</b>: {{fav_pokemon}}</p>
+
+<hr>
+<form action="/profile/{{g.user.id}}" method="POST">
+    {{ form.hidden_tag() }}
+    
+    {% for field in form
+        if field.widget.input_type != 'hidden' %}
+        <div class="form-group mb-4">
+            {% if field.label.text == 'Current password' %}
+            <hr>
+            <p class="text-warning">Enter your current password to update any info</p>
+            <hr>
+            {% endif %}
+    
+            {{ field.label }}
+            {{ field(class="form-control text-start") }}
+            <span>
+            {% for error in field.errors %}
+                <b class="text-danger">{{ error }}</b>
+            {% endfor %}
+            </span>
+        </div>
+    {% endfor %}
+    <button class="btn btn-lg btn-primary">Submit</button>
+</form>
+
+
+{% endblock %}

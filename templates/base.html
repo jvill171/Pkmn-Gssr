@@ -29,7 +29,9 @@
                         <a class="nav-link" href="#"><b>Game Mode</b></a>
                     </li>
                     <li class="nav-item ms-2">
-                        <img class="pfp-navbar" src="{{g.user.img_url}}" alt="Your profile picture">
+                        <a href="/profile/{{g.user.id}}">
+                            <img class="pfp-navbar" src="{{g.user.img_url}}" alt="Your profile picture">
+                        </a>
                     </li>
                     <li class="nav-item ms-2">
                         <a class="nav-link" href="/logout"><b>Logout</b></a>
