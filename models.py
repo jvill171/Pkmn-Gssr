@@ -20,9 +20,15 @@ class User(db.Model):
     username = db.Column(db.Text, nullable=False, unique=True)
     password = db.Column(db.Text, nullable=False)
     email    = db.Column(db.Text, nullable=False, unique=True)
-    fav_pkmn = db.Column(db.Text, nullable=False)
+    fav_pkmn = db.Column(db.Integer, nullable=False)
     img_url  = db.Column(db.Text, default='/static/images/pokeball.png')
 
+    @classmethod
+    def update_pass(self, user, new_password):
+        """Returns encrypted password for updating user on flask"""
+        user.password = bcrypt.generate_password_hash(new_password).decode('UTF-8')
+        flash("Password updated!")
+    
     @classmethod
     def signup(cls, username, email, password, img_url, favorite):
         """Sign up user.
@@ -51,7 +57,6 @@ class User(db.Model):
 
         If can't find matching user (or if password is wrong), returns False.
         """
-
         user = cls.query.filter_by(username=username).first()
         
         if user:
