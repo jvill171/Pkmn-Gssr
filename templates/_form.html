@@ -5,7 +5,7 @@
     if field.widget.input_type != 'hidden' %}
     <div class="form-group mb-4">
         {{ field.label }}
-        {{ field(class="form-control") }}
+        {{ field(class="form-control text-start") }}
         <span>
         {% for error in field.errors %}
             <b class="text-danger">{{ error }}</b>
