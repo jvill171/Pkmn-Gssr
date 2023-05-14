@@ -5,10 +5,7 @@ const guessbtn = document.querySelector("#guess-btn")
 const newGameBtn = document.querySelector("#new-game-btn")
 
 const genList = document.querySelector(".pkmn-gens")
-const typeList = document.querySelector(".pkmn-types")
 const shapeList = document.querySelector(".pkmn-shapes")
-const colorlist = document.querySelector(".pkmn-colors")
-const egglist = document.querySelector(".pkmn-eggs")
 
 const pkmnGenerated = new Event("pokemon-generated");
 const pkmnGuessAdded = new Event("pkmn-guess-made");
@@ -65,9 +62,9 @@ function searchHandler(e){
     showSuggestions(search(input.value.toLowerCase()), input.value)
 }
 
-// Display 5 suggestions
+// Display suggestions
 function showSuggestions(results, inputVal){
-    results.every((val, idx) => {
+    results.every((val) => {
         const newSTRONG = document.createElement("strong");
         const newLI = document.createElement("li");
         newLI.classList.add("has-suggestions")
@@ -80,7 +77,7 @@ function showSuggestions(results, inputVal){
         newLI.append(stylized_suggestion[2])
 
         suggestions.append(newLI);
-        return idx < 4;
+        return val;
     })
 }
 
@@ -111,16 +108,19 @@ suggestions.addEventListener('mouseup', useSuggestion)
 // Submit a pokemon
 guessbtn.addEventListener('click', (e)=>{
     e.preventDefault()
-    let $noPokeWarn = $("#non-poke-warn")
-    $noPokeWarn.addClass("hidden-item")
     
-    if(guessList.includes(input.value.toLowerCase())){
+    const $noPokeWarn = $("#non-poke-warn")
+    
+    $noPokeWarn.addClass("hidden-item")
+    if(guessList.includes(input.value.toLowerCase().trim())){
         $noPokeWarn
             .removeClass("hidden-item")
-            .text("You've already guessed that pokemon!")
+            .text(`You've already guessed ${input.value.toLowerCase().trim()}!`)
+            input.value = ''
     }
-    else if (allPokemon.includes(makeCapitalized(input.value.toLowerCase()))){
+    else if (allPokemon.includes(makeCapitalized(input.value.toLowerCase().trim()))){
         // Valid guess
+        $noPokeWarn.addClass("hidden-item")
         makeGuess(input.value)
         $("#pkmn-guess").prop("disabled", true).css("color", "white")
         input.value = `Guessing ${input.value}...` 
@@ -133,7 +133,7 @@ guessbtn.addEventListener('click', (e)=>{
 })
 
 document.addEventListener("pkmn-guess-made",()=>{
-    $("#pkmn-guess").prop("disabled", false).css("color", "black")
+    $("#pkmn-guess").prop("disabled", false).css("color", "black").focus()
     input.value = ''
 })
 
@@ -159,13 +159,25 @@ function resetGame(){
     $(".all-guesses").empty()
     $(".good-item").addClass("neutral-item").removeClass("good-item")
     $(".bad-item").addClass("neutral-item").removeClass("bad-item")
+    $(".score").text(0)
+    $("#pkmn-guess").prop("disabled", false)
+    $("#guess-btn").prop("disabled", false)
+    input.value = ''
+    
+    $(".end-status").addClass("hidden-item")
+                    .removeClass(["text-danger", "text-success"])
 
 }
 
 // FUNCTIONS FOR STYLING
 // ********************************************************
 function makeCapitalized(word){
-    return word.charAt(0).toUpperCase() + word.slice(1)
+    let words = word.split(" ");
+
+    words.forEach((cVal, idx)=>{
+        words[idx] = cVal.charAt(0).toUpperCase() + cVal.slice(1)
+    })
+    return words.join(' ')
 }
 
 // FUNCTIONS FOR GENERATING GAME'S ICON LIST
@@ -311,6 +323,7 @@ function generateRandPkmn(){
                     
                     $("#load-msg").toggleClass("hidden-item")
                     $("#game").toggleClass("hidden-item")
+                    $("#pkmn-guess").focus()
                 })
 }
 // Make a guess
@@ -322,9 +335,9 @@ function makeGuess(pkmnName){
 
         buildPokemon(dexNum)
             .then(myGuess => {
+                addGuessCount()
                 addGuessData(myGuess)
                 checkGuessData(myGuess)
-                document.dispatchEvent(pkmnGuessAdded)
             })
     }
 }
@@ -411,13 +424,46 @@ function checkGuessData(gData){
             $elem.removeClass("neutral-item")
         }
     }
-    if(gData["Name"] == tgp["Name"]){
-        // Add victory script here
+    
+    document.dispatchEvent(pkmnGuessAdded)
+    if(gData["Name"] == tgp["Name"] || Number($(".score").text()) >= 20){
+        gameEnd()
     }
 }
-// function gameWin(){
+function addGuessCount(){
+    let score = Number($(".score").text())
+    $(".score").text(score+1)
+}
+
+function gameEnd(){
+    let score = $(".score").text()
+
+    $("#pkmn-guess").prop("disabled", true).css("color", "white")
+    $("#guess-btn").prop("disabled", true)
+
+    input.value = `Its ${tgp["Name"]}!`
+
+    if(Number($(".score").text()) >= 20){
+        revealAnswer()
+        $(".end-status").addClass("text-danger")
+                        .text("Failure")
+                        .removeClass("hidden-item")
+    }
+    else{
+        $(".end-status").addClass("text-success")
+                        .text("Victory!"
+                        ).removeClass("hidden-item")
+    }
     
-// }
+}
+function revealAnswer(){
+    $(".all-guesses").append(
+        `<tr>
+            <td colspan="9" style="background-color: green">ANSWER</td>
+        </tr>`
+    )
+    addGuessData(tgp)
+}
 
 // Start building page components
 // ===================================
