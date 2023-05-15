@@ -207,10 +207,23 @@ def comparePoke(dex_num):
     to_guess = buildPokemon(dex_num)
     result = {}
     for k in to_guess:
-        if(session['poke'][k] == to_guess[k]):
-            result[k] = [to_guess[k], "OK"]
+        if(k in ["Egg1", "Egg2"]):
+            if(to_guess[k] in [session['poke']["Egg1"], session['poke']["Egg2"]] ):
+                result[k] = [to_guess[k], "OK"]
+            else:
+                result[k] = [to_guess[k], "BAD"]
+
+        elif(k in ["Type1", "Type2"]):
+            if(to_guess[k] in [session['poke']["Type1"], session['poke']["Type2"]] ):
+                result[k] = [to_guess[k], "OK"]
+            else:
+                result[k] = [to_guess[k], "BAD"]
+
         else:
-            result[k] = [to_guess[k], "BAD"]
+            if(session['poke'][k] == to_guess[k]):
+                result[k] = [to_guess[k], "OK"]
+            else:
+                result[k] = [to_guess[k], "BAD"]
 
     session['guess_counter'] += 1
     session['victory'] = True if(session['poke']["Name"] == to_guess["Name"]) else False
