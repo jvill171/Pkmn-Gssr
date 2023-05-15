@@ -1,6 +1,6 @@
 import os
 import requests
-from flask import Flask, render_template, flash, redirect, session, g
+from flask import Flask, request, render_template, flash, redirect, session, g, jsonify
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 from forms import UserAddForm, LoginForm, EditUserForm
@@ -15,6 +15,7 @@ from models import db, connect_db
 
 CURR_USER_KEY = "curr_user"
 BASE_API_URL = "https://pokeapi.co/api/v2/"
+COUNTER_LIMIT = 15
 
 app = Flask(__name__)
 app.app_context().push()
@@ -137,6 +138,11 @@ def signup():
 @app.route("/profile/<int:user_id>", methods=['GET', 'POST'])
 def user_profile(user_id):
     """Allow user to update their email, password, and/or favorite pokemon (updates profile picture)"""
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
     user = User.query.get_or_404(user_id)
     form=EditUserForm(obj=user)
 
@@ -177,5 +183,111 @@ def user_profile(user_id):
 @app.route("/leaderboard")
 def leaderboard():
     """Display leaderboards for all players"""
-
+    print("session['poke']", session['poke'])
     return render_template('leaderboard.html')
+
+# Routes for game to keep track of data on server through session
+# ////////////////////////////////////////////////////////////////
+@app.route("/random-pokemon", methods=['POST'])
+def setRandomPoke():
+    """Generate a random pokemon & store it in the session through a dictionary object"""
+    dex_num = randint(1, len(pokemon_list) - 1)
+    session['poke'] = buildPokemon(dex_num)
+    session['guess_counter'] = 0
+
+    return "POKEMON GENERATED (server-side)"
+
+@app.route("/compare-pokemon/<int:dex_num>", methods=['POST'])
+def comparePoke(dex_num):
+    """
+    Compare player's guess to session['poke'] & return a dictionary of the result
+    OK = data is the same across session and guess
+    BAD = data is different across sessiong and guess
+    """
+    to_guess = buildPokemon(dex_num)
+    result = {}
+    for k in to_guess:
+        if(session['poke'][k] == to_guess[k]):
+            result[k] = [to_guess[k], "OK"]
+        else:
+            result[k] = [to_guess[k], "BAD"]
+
+    session['guess_counter'] += 1
+    session['victory'] = True if(session['poke']["Name"] == to_guess["Name"]) else False
+
+    return jsonify(result)
+
+@app.route("/get-answer", methods=["GET"])
+def getAnswer():
+    '''Returns the session pokemon. Should be called @ end of game to display pokemon's name'''
+    if(session['poke'] == None):
+        return redirect("/")
+    
+    solution = session['poke']["Name"]
+
+    # Clear the session pokemon as a precaution for cheaters
+    session['poke'] = None
+
+    return jsonify(solution)
+
+@app.route("/guess-counter", methods=["GET"])
+def getGuessCounter():
+    """Return how many guesses have been made & the limit"""
+
+    counter_resp = {
+        "counter": session['guess_counter'],
+        "limit": COUNTER_LIMIT
+    }
+
+    return jsonify(counter_resp)
+
+@app.route("/submit-game", methods=["POST"])
+def submitScore():
+    if not g.user:
+        return jsonify("Login to submit your score!")
+    score = session['guess_counter']
+    mode = 1
+    outcome = session['victory']
+    newScore = Game(
+        user_id = g.user.id,
+        score = score,
+        game_mode = mode,
+        outcome = outcome
+    )
+    db.session.add(newScore)
+    db.session.commit()
+    
+    return jsonify(f"Score of {score} submitted for {g.user.username}!")
+
+# NON-@app.X
+# **************************************
+def buildPokemon(dex_num):
+    """Builds a dictionary object with pokemon data"""
+    resp_poke = requests.get(f"{BASE_API_URL}/pokemon/{dex_num}").json()
+    resp_spec = requests.get(f"{BASE_API_URL}/pokemon-species/{dex_num}").json()
+
+    # resp_poke
+    img_url = resp_poke['sprites']['other']['official-artwork']['front_default']
+    type1 = resp_poke['types'][0]["type"]["name"]
+    type2 = "None" if(len(resp_poke['types']) == 1) else resp_poke["types"][1]["type"]["name"]
+    
+    # resp_spec
+    gen = resp_spec['generation']['name'][11:]
+    shape = resp_spec['shape']['name']
+    egg1 = resp_spec["egg_groups"][0]["name"]
+    egg2 = "None" if(len(resp_spec['egg_groups']) == 1) else resp_spec["egg_groups"][1]["name"]
+    color = resp_spec['color']['name']
+
+    print("S - BUILT ",pokemon_list[dex_num - 1].title() )
+
+    return {
+        "Name"  : pokemon_list[dex_num - 1].title(),
+        "Image" : img_url,
+        "Gen"   : gen.upper(),
+        "Egg1"  : egg1.capitalize(),
+        "Egg2"  : egg2.capitalize(),
+        "Color" : color.capitalize(),
+        "Shape" : shape.lower(),
+        "Type1" : type1.capitalize(),
+        "Type2" : type2.capitalize(),
+    }

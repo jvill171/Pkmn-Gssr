@@ -7,11 +7,13 @@ const newGameBtn = document.querySelector("#new-game-btn")
 const genList = document.querySelector(".pkmn-gens")
 const shapeList = document.querySelector(".pkmn-shapes")
 
-const pkmnGenerated = new Event("pokemon-generated");
 const pkmnGuessAdded = new Event("pkmn-guess-made");
+let maxGuess = document.querySelector(".score-limit")
+let lastGuess
+
+const orderData = ["Name",  "Image",  "Gen",  "Egg1",  "Egg2",  "Color",  "Shape",  "Type1",  "Type2", ]
 
 const BASE_API_URL = "https://pokeapi.co/api/v2"
-let tgp;
 let guessList = []
 
 
@@ -34,7 +36,6 @@ const allGens = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII",]
 const allPokemon = [];
 
 function getAllPokemon(){
-
     $("#all-pkmn ul li").each(function() {
         allPokemon
             .push($(this)
@@ -94,7 +95,7 @@ function clearSuggestion(){
 
 // Returns an array of a sliced suggestion. Slices occur at point where input matches suggestion
 function makeStrong(pkmnSuggestion, userInput){
-    const startSlice = pkmnSuggestion.toLowerCase().indexOf(input.value);
+    const startSlice = pkmnSuggestion.toLowerCase().indexOf(input.value.toLowerCase());
     const endSlice = startSlice + userInput.length;
 
     return [pkmnSuggestion.slice(0,startSlice),
@@ -108,7 +109,6 @@ suggestions.addEventListener('mouseup', useSuggestion)
 // Submit a pokemon
 guessbtn.addEventListener('click', (e)=>{
     e.preventDefault()
-    
     const $noPokeWarn = $("#non-poke-warn")
     
     $noPokeWarn.addClass("hidden-item")
@@ -121,7 +121,7 @@ guessbtn.addEventListener('click', (e)=>{
     else if (allPokemon.includes(makeCapitalized(input.value.toLowerCase().trim()))){
         // Valid guess
         $noPokeWarn.addClass("hidden-item")
-        makeGuess(input.value)
+        makeGuess(input.value);
         $("#pkmn-guess").prop("disabled", true).css("color", "white")
         input.value = `Guessing ${input.value}...` 
     }
@@ -137,7 +137,10 @@ document.addEventListener("pkmn-guess-made",()=>{
     input.value = ''
 })
 
-newGameBtn.addEventListener('click',()=>{makeNewGame()})
+newGameBtn.addEventListener('click',(e)=>{
+    e.preventDefault()
+    makeNewGame();
+})
 
 // Clear board and select a new pokemon
 function makeNewGame(){
@@ -145,13 +148,15 @@ function makeNewGame(){
     setTimeout(() => {
         $("#new-game-btn").prop("disabled", false)
     }, 5000);
-    // Hide game & show loading message
-    $("#load-msg").toggleClass("hidden-item")
-    $("#game").toggleClass("hidden-item")
-
-    generateRandPkmn()
+    generateRandPkmn();
+    hideShowGame();
     resetGame();
 
+}
+
+function hideShowGame(){
+    $("#load-msg").toggleClass("hidden-item")
+    $("#game").toggleClass("hidden-item")
 }
 
 function resetGame(){
@@ -162,7 +167,9 @@ function resetGame(){
     $(".score").text(0)
     $("#pkmn-guess").prop("disabled", false)
     $("#guess-btn").prop("disabled", false)
+    $("#non-poke-warn").addClass("hidden-item")
     input.value = ''
+    $("#pkmn-guess").removeClass("text-bg-success text-bg-danger")
     
     $(".end-status").addClass("hidden-item")
                     .removeClass(["text-danger", "text-success"])
@@ -263,68 +270,18 @@ function genReferenceData(){
     getEggs();
 }
 
-// FUNCTIONS FETCHING POKEMON DATA
-// ********************************************************
-// Pokemon types retrieved here
-async function getPokemon(dexNum){
-    let resp = await axios.get(`${BASE_API_URL}/pokemon/${dexNum}`)
-    let r = resp.data
-    return {
-        "img_url" : r['sprites']['other']['official-artwork']['front_default'],
-        "type1"   : makeCapitalized(r.types[0].type.name),
-        "type2"   : makeCapitalized(r.types.length == 1 ? "None" : r.types[1].type.name),
-    }
-    return resp.data
-}
-// All other needed pokemon retrieved here
-async function getSpecies(dexNum){
-    let resp = await axios.get(`${BASE_API_URL}/pokemon-species/${dexNum}`)
-    let r = resp.data
-    
-    return {
-        "gen"   : (r.generation.name).slice(11).toUpperCase(),
-        "shape" : r.shape.name.toLowerCase(),
-        "egg1"  : makeCapitalized(r.egg_groups[0].name),
-        "egg2"  : makeCapitalized(r.egg_groups.length == 1 ? "None" : r.egg_groups[1].name),
-        "color" : makeCapitalized(r.color.name),
-    }
-}
-// Make a dictionary with pokemon data
-async function buildPokemon(dexNum){
-    console.log(`Building pokemon ${dexNum} -- ${allPokemon[dexNum - 1]}`)
-    
-    let respPkmn = await getPokemon(dexNum);
-    let respSpec = await getSpecies(dexNum);
-
-    const pkmnData = {
-        "Name"  : allPokemon[dexNum - 1],
-        "Image" : respPkmn["img_url"],
-        "Gen"   : respSpec["gen"],
-        "Egg1"  : respSpec["egg1"],
-        "Egg2"  : respSpec["egg2"],
-        "Color" : respSpec["color"],
-        "Shape" : respSpec["shape"],
-        "Type1" : respPkmn["type1"],
-        "Type2" : respPkmn["type2"],
-    }
-    return pkmnData
-}
 // FUNCTIONS GENERATING POKEMON & RETRIEVEING POKEMON FROM GUESSES
 // ***************************************************************
 // Generate pokemon
 function generateRandPkmn(){
-    buildPokemon(dexNum = (
-                    Math.floor(
-                        Math.random() * allPokemon.length)))
-
-                .then(guessPKMN =>{
-                    tgp = guessPKMN
-                    document.dispatchEvent(pkmnGenerated)
-                    
-                    $("#load-msg").toggleClass("hidden-item")
-                    $("#game").toggleClass("hidden-item")
-                    $("#pkmn-guess").focus()
-                })
+    // Generate pokemon server-side
+    axios.post("/random-pokemon")
+    .then((response) => {
+        if(response.status == 200){
+            hideShowGame()
+            $("#pkmn-guess").focus()
+        }
+    })
 }
 // Make a guess
 function makeGuess(pkmnName){
@@ -332,149 +289,152 @@ function makeGuess(pkmnName){
     myName =  makeCapitalized(pkmnName.toLowerCase())
     if (allPokemon.includes(myName)){
         dexNum = allPokemon.indexOf(myName)+1
-
-        buildPokemon(dexNum)
-            .then(myGuess => {
-                addGuessCount()
-                addGuessData(myGuess)
-                checkGuessData(myGuess)
-            })
+        
+        axios.post(`/compare-pokemon/${dexNum}`)
+        .then(async (response) => {
+            if(response.status == 200){
+                let guessResp = await response.data
+                addGuessData(guessResp)
+                checkGuessData(guessResp)
+            }
+        })
     }
 }
 // Add guess to guesses table
 function addGuessData(gData){
     let newTR = document.createElement('tr')
-    guessList.push(gData["Name"].toLowerCase())
-    for (let k in gData){
+    guessList.push(gData["Name"][0].toLowerCase())
+
+    for (let k of orderData){
         let newTD = document.createElement('td')
         let newIMG = document.createElement('img')
-        
+
         if(["Shape", "Image"].includes(k)){
             if(k == "Image"){
                 newIMG.style.backgroundColor = "transparent"
                 newIMG.style.border = "none"
-                newIMG.src = gData[k]
+                newIMG.src = gData[k][0]
             }
             else{
-                newIMG.src = `/static/images/shapes/${gData[k]}.png`
+                newIMG.src = `/static/images/shapes/${gData[k][0]}.png`
             }
             newTD.append(newIMG)
         }
         else{
             if(["Type1", "Type2", "Color"].includes(k)){
                 if(k == "Color"){
-                    if(["Brown", "Green"].includes(gData[k])){
-                        newTD.style.backgroundColor = gData[k] != "Brown" ? typeColor_dict['Grass'] : typeColor_dict['Rock']
+                    if(["Brown", "Green"].includes(gData[k][0])){
+                        newTD.style.backgroundColor = gData[k][0] != "Brown" ? typeColor_dict['Grass'] : typeColor_dict['Rock']
                     }
                     else{
-                        newTD.style.backgroundColor = gData[k]
+                        newTD.style.backgroundColor = gData[k][0]
                     }
                 }
                 else{
-                    let typeColor = makeCapitalized(gData[k])
+                    let typeColor = makeCapitalized(gData[k][0])
                     newTD.style.backgroundColor = (typeColor == "None" ? "Black" : typeColor_dict[typeColor])
                 }
             }
-            newTD.append(makeCapitalized(gData[k]))
+            newTD.append(makeCapitalized(gData[k][0]))
             newTR.append(newTD)
         }
         newTR.append(newTD)
     }
     $(".all-guesses").append(newTR)
 }
-// Validate guess data
+// // Validate guess data
 function checkGuessData(gData){
-    
-    for (let k in gData){
-        if(!["Image", "Name"].includes(k)){
-            let $elem;
-            
-            if (["Type1", "Type2"].includes(k)){
-                $elem = $(`.Type-${gData[k]}`)
-
-                if([tgp["Type1"], tgp["Type2"] ].includes(gData[k])){
-                    $elem.addClass("good-item")
-                }
-                else{
-                    $elem.addClass("bad-item")
-                }
+    for (let k of orderData){
+        let $elem;
+        if (!(k == "Name" || k == "Image")){
+            if(k == "Egg1" || k == "Egg2"){
+                $elem = $(`.Egg-${gData[k][0]}`)
             }
-            else if (["Egg1", "Egg2"].includes(k)){
-                $elem = $(`.Egg-${gData[k]}`)
-                if([tgp["Egg1"], tgp["Egg2"]].includes(gData[k])){
-                    $elem.addClass("good-item")
-                }
-                else{
-                    $elem.addClass("bad-item")
-                }
-            }
-            else if(["Color", "Shape", "Gen"].includes(k)){
-                
-                $elem = $(`.${k}-${gData[k]}`)
-                if(tgp[k] == gData[k]){
-                    $elem.addClass("good-item")
-                }
-                else{
-                    $elem.addClass("bad-item")
-                }
+            else if(k == "Type1" || k == "Type2"){
+                $elem = $(`.Type-${gData[k][0]}`)
             }
             else{
-                // Do nothing: Name, Image
+                $elem = $(`.${k}-${gData[k][0]}`)
+            }
+            if(gData[k][1] == "OK"){
+                $elem.addClass("good-item")
+            }
+            else{
+                $elem.addClass("bad-item")
             }
             $elem.removeClass("neutral-item")
         }
     }
-    
     document.dispatchEvent(pkmnGuessAdded)
-    if(gData["Name"] == tgp["Name"] || Number($(".score").text()) >= 20){
-        gameEnd()
+
+    addGuessCount(gData)
+    if(gData["Name"][1] == "OK"){
+        axios.get('/get-answer')
+        .then(async (response) => {
+            if(response.status == 200){
+                let guessResp = await response.data
+                gameEnd(guessResp, gData["Name"][0])
+            }
+        })
     }
 }
-function addGuessCount(){
-    let score = Number($(".score").text())
-    $(".score").text(score+1)
+
+// Add guess server-side; If limit reached, gameEnd()
+async function addGuessCount(gData){
+    axios.get("/guess-counter")
+    .then(async (response)=>{
+        await response.data
+        $(".score").text(response.data['counter'])
+        $(".score-limit").text(`${response.data['limit']}`)
+    })
+    .then(()=>{
+        if(Number($(".score").text()) == Number($(".score-limit").text())){
+            
+            axios.get('/get-answer')
+            .then(async (response) => {
+                if(response.status == 200){
+                    let guessResp = await response.data
+                    gameEnd(guessResp, gData["Name"][0])
+                }
+            })
+        }
+    })
 }
 
-function gameEnd(){
+function gameEnd(answerName="Answer", gName="Guess"){
+
     let score = $(".score").text()
 
     $("#pkmn-guess").prop("disabled", true).css("color", "white")
     $("#guess-btn").prop("disabled", true)
 
-    input.value = `Its ${tgp["Name"]}!`
-
-    if(Number($(".score").text()) >= 20){
-        revealAnswer()
-        $(".end-status").addClass("text-danger")
-                        .text("Failure")
-                        .removeClass("hidden-item")
-    }
-    else{
+    input.value = `Its ${answerName}!`
+    
+    if(gName == answerName){
         $(".end-status").addClass("text-success")
                         .text("Victory!"
                         ).removeClass("hidden-item")
+        $("#pkmn-guess").addClass("text-bg-success")
+    }
+    else{
+        $(".end-status").addClass("text-danger")
+                        .text("Failure")
+                        .removeClass("hidden-item")
+        $("#pkmn-guess").addClass("text-bg-danger")
     }
     
-}
-function revealAnswer(){
-    $(".all-guesses").append(
-        `<tr>
-            <td colspan="9" style="background-color: green">ANSWER</td>
-        </tr>`
-    )
-    addGuessData(tgp)
+    axios.post("/submit-game")
+    .then(async response =>{
+        await response.data
+        $("#non-poke-warn").text(response.data).removeClass("hidden-item")
+    })
+    
 }
 
 // Start building page components
 // ===================================
-getAllPokemon();
-genReferenceData();
-document.addEventListener('DOMContentLoaded', function(event) {
-    generateRandPkmn();
+document.addEventListener('DOMContentLoaded', () => {
+    getAllPokemon();
+    genReferenceData();
+    makeNewGame();
   })
-
-// Make guess once a pokemon to guess have been generated
-// FOR TESTING PURPOSES
-// document.addEventListener("pokemon-generated", (e)=>{
-//     makeGuess("Gardevoir")
-// })
