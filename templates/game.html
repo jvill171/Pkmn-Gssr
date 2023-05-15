@@ -5,12 +5,14 @@
     <div class="row">
         <h1 class="my-3">Who's that Pokemon</h1>
     </div>
-
-    <button id="new-game-btn" class="btn btn-lg btn-primary mb-3">New Game</button>
+    <form action="/random-pokemon" method="GET">
+        <button id="new-game-btn" class="btn btn-lg btn-primary mb-3">New Game</button>
+    </form>
     <div class="row">
-        <p class="fs-4 text-warning">Guesses: <span class="score">0</span> / 20</p>
+        <p class="fs-4 text-warning">Guesses: <span class="score">0</span> / <span class="score-limit">15</span></p>
         <p class="end-status fs-4 hidden-item">Victory!</p>
     </div>
+
     <!-- Hidden list of all pokemon -->
     <section id="all-pkmn" class="hidden-item">
         <ul>
@@ -21,11 +23,11 @@
     </section>
 
 
-    <div id="load-msg" class="row">
+    <div id="load-msg" class="row hidden-item">
         <p>Selecting Random Pokemon . . .</p>
     </div>
 
-    <div id="game" class="row hidden-item">
+    <div id="game" class="row">
         <div class="row"><p id="non-poke-warn" class="hidden-item">Not a pokemon!</p></div>
 
         <form id="guess-form" class="row pb-2" autocomplete="off">
