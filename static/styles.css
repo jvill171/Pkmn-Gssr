@@ -89,10 +89,10 @@
     scale: 110%;
   }
   
-  th, td{
+  #guess-table th, #guess-table td{
     border: 1px solid white;
   }
-  td{
+  #guess-table td{
     text-shadow: black 0 0 5px;
   }
   th{
@@ -115,4 +115,3 @@
     border: 2px solid rgb(201, 0, 0);
     opacity: .5;
   }
-  
