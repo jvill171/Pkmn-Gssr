@@ -103,10 +103,13 @@ function makeStrong(pkmnSuggestion, userInput){
             pkmnSuggestion.slice(endSlice, pkmnSuggestion.length)]
 }
 
+
+// EVENT LISTENRS
+// ************************************
 input.addEventListener('keyup', searchHandler);
+
 suggestions.addEventListener('mouseup', useSuggestion)
 
-// Submit a pokemon
 guessbtn.addEventListener('click', (e)=>{
     e.preventDefault()
     const $noPokeWarn = $("#non-poke-warn")
@@ -141,7 +144,9 @@ guessbtn.addEventListener('click', (e)=>{
 document.addEventListener("pkmn-guess-made",()=>{
     $("#pkmn-guess").prop("disabled", false).css("color", "black").focus()
     input.value = ''
-    resumeTimer()
+    if(gameMode == 2){
+        resumeTimer()
+    }
 })
 
 newGameBtn.addEventListener('click',(e)=>{
@@ -250,11 +255,19 @@ async function getColors(){
         const capColor = makeCapitalized(color.name)
         let pkmnBgColor;
         
-        if(["Brown", "Green"].includes(capColor)){
-            pkmnBgColor = capColor != "Brown" ? typeColor_dict['Grass'] : typeColor_dict['Rock']
-        }
-        else{
-            pkmnBgColor = capColor
+        switch(capColor){
+            case "Brown":
+                pkmnBgColor = typeColor_dict['Rock']
+                break;
+            case "Green":
+                pkmnBgColor = typeColor_dict['Grass']
+                break;
+            case "White":
+                pkmnBgColor = "#F5F5F5"
+                break;
+            default:
+                pkmnBgColor = capColor
+                break;
         }
         $('.pkmn-colors').append(
             `<li class="neutral-item Color-${capColor}" style="background-color: ${pkmnBgColor};">${capColor}</li>`)
@@ -269,6 +282,9 @@ async function getEggs(){
         $(".pkmn-eggs").append(
             `<li class="neutral-item Egg-${capEgg}" style="background-color: ${eggColor_dict[capEgg]}">${capEgg}</li>`)
     }
+    $(".pkmn-eggs").append(
+        `<li class="neutral-item Egg-None" style="background-color: #000000;">Single-Egg</li>`
+    )
 }
 
 // Call all functions to generate reference data
@@ -322,7 +338,7 @@ function addGuessData(gData){
     for (let k of orderData){
         let newTD = document.createElement('td')
         let newIMG = document.createElement('img')
-
+        newTD.style.backgroundColor = "rgba(0, 0, 0, 0.3)"
         if(["Shape", "Image"].includes(k)){
             if(k == "Image"){
                 newIMG.style.backgroundColor = "transparent"
@@ -337,11 +353,19 @@ function addGuessData(gData){
         else{
             if(["Type1", "Type2", "Color"].includes(k)){
                 if(k == "Color"){
-                    if(["Brown", "Green"].includes(gData[k][0])){
-                        newTD.style.backgroundColor = gData[k][0] != "Brown" ? typeColor_dict['Grass'] : typeColor_dict['Rock']
-                    }
-                    else{
-                        newTD.style.backgroundColor = gData[k][0]
+                    switch(gData[k][0]){
+                        case "Brown":
+                            newTD.style.backgroundColor = typeColor_dict['Rock']
+                            break;
+                        case "Green":
+                            newTD.style.backgroundColor = typeColor_dict['Grass']
+                            break;
+                        case "White":
+                            newTD.style.backgroundColor = "#F5F5F5"
+                            break;
+                        default:
+                            newTD.style.backgroundColor = gData[k][0]
+                            break;
                     }
                 }
                 else{
