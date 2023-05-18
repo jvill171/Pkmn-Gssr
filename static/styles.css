@@ -85,7 +85,7 @@
     margin: 5px;
   }
 
-  img:hover{
+  nav li *:hover{
     scale: 110%;
   }
   
@@ -109,9 +109,14 @@
   .good-item{
     border: 4px solid green;
     font-weight : bold;
-    box-shadow: rgb(170, 255, 182) 0 0 10px;
+    box-shadow: rgb(0, 110, 15) 0 0 10px;
+    padding-top: 0;
+    padding-bottom: 0;
   }
   .bad-item{
-    border: 2px solid rgb(201, 0, 0);
     opacity: .5;
+    text-decoration: line-through;
+    color: black;
+    text-shadow: rgb(255, 255, 255) 0 0 10px;
+    box-shadow: rgb(192, 0, 0) 0 0 10px;
   }
