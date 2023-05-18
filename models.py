@@ -23,6 +23,8 @@ class User(db.Model):
     fav_pkmn = db.Column(db.Integer, nullable=False)
     img_url  = db.Column(db.Text, default='/static/images/pokeball.png')
 
+    game = db.relationship("Game", backref='user', cascade='all, delete')
+
     @classmethod
     def update_pass(self, user, new_password):
         """Returns encrypted password for updating user on flask"""
@@ -73,6 +75,10 @@ class Game(db.Model):
     """Games table"""
     __tablename__ = "pkmn_games"
 
+    def __repr__(self):
+        g = self
+        return f"<Game id={g.id}, score={g.score}, game_mode={g.game_mode}, outcome={g.outcome}>"
+
     id          = db.Column(db.Integer, primary_key = True)
     user_id     = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='cascade'))
     score       = db.Column(db.Integer)
@@ -80,6 +86,8 @@ class Game(db.Model):
     game_mode   = db.Column(db.Integer)
     # True if Win, False if Loss
     outcome     = db.Column(db.Boolean, default=False)
+
+
 
 def connect_db(app):
     """Connects this DB to provided Flask app.
