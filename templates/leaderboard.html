@@ -1,28 +1,54 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<h1 class="text-center mt-4">Leaderboards</h1>
+<div class="row">
+    <div class="col-sm-6">
+        <table class="leaderboard-table table table-bordered table-striped text-center my-3">
+            <thead>
+                <tr class="table-light">
+                    <th colspan="3"> Top {{ top_scores_normal | length }} <i class="fa-solid fa-couch" title="Normal Mode"></i> Scores</th>
+                </tr>
+                <tr class="table-primary">
+                    <th>Player</th>
+                    <th>Score</th>
+                    <th>Game Mode</th>
+                </tr>
+            </thead>
+            <tbody class="table-secondary">
+                {% for s in top_scores_normal %}
+                <tr>
+                    <td class="px-2">{{s.user.username}}</td>
+                    <td class="px-2">{{s.score}}</td>
+                    <td class="px-2">{{s.game_mode}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="col-sm-6">
+        <table class="leaderboard-table table table-bordered table-striped text-center my-3">
+            <thead>
+                <tr class="table-light">
+                    <th colspan="3"> Top {{ top_scores_time | length }} <i class="fa-solid fa-stopwatch" title="Time-Attack Mode"></i> Scores</th>
+                </tr>
+                <tr class="table-primary">
+                    <th>Player</th>
+                    <th>Score</th>
+                    <th>Game Mode</th>
+                </tr>
+            </thead>
+            <tbody class="table-secondary">
+                {% for s in top_scores_time %}
+                <tr>
+                    <td class="px-2">{{s.user.username}}</td>
+                    <td class="px-2">{{s.score}}</td>
+                    <td class="px-2">{{s.game_mode}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
-<table class="leaderboard-table table table-bordered table-striped text-center my-5">
-    <thead>
-        <tr class="table-light">
-            <th colspan="3"> TOP {{ top_scores | length }} SCORES</th>
-        </tr>
-        <tr class="table-primary">
-            <th>Player</th>
-            <th>Score</th>
-            <th>Game Mode</th>
-        </tr>
-    </thead>
-    <tbody class="table-secondary">
-        {% for s in top_scores %}
-        <tr>
-            <td class="px-2">{{s.user.username}}</td>
-            <td class="px-2">{{s.score}}</td>
-            <td class="px-2">{{s.game_mode}}</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-
-
+</div>
 {% endblock %}

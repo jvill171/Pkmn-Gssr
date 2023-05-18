@@ -216,9 +216,10 @@ def user_profile(user_id):
 @app.route("/leaderboard")
 def leaderboard():
     """Display leaderboards for all players"""
-    top_scores = Game.query.order_by(Game.score).limit(25).all()
+    top_scores_normal = Game.query.filter(Game.game_mode == 1).order_by(Game.score).limit(25).all()
+    top_scores_time = Game.query.filter(Game.game_mode == 2).order_by(Game.score).limit(25).all()
 
-    return render_template('leaderboard.html', top_scores=top_scores)
+    return render_template('leaderboard.html', top_scores_normal=top_scores_normal, top_scores_time=top_scores_time)
 
 @app.route("/profile/delete", methods=["POST"])
 def deleteAccount():
