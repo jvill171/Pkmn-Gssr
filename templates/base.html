@@ -15,8 +15,8 @@
         <div class="container-fluid">
             <a class="navbar-brand" href="/">PkmnGssr</a>
             <ul class="nav navbar-nav flex-row floating-right">
-                <li class="nav-item ms-2">
-                    <a class="nav-link" href="/leaderboard"><b>Leaderboard</b></a>
+                <li class="nav-item ms-2 h4">
+                    <a class="nav-link" href="/leaderboard"><i class="fa-solid fa-ranking-star" title="Leaderboard"></i></a>
                 </li>
                 {% if not g.user %}
                     <li class="nav-item ms-2">
@@ -26,14 +26,33 @@
                         <a class="nav-link" href="/login"><b>Login</b></a>
                     </li>
                 {% else %}
-                    <li class="nav-item ms-2">
-                        <a class="nav-link" href="#">
-                            <i class="fa-solid fa-rotate"> Mode</i>
-                        </a>
-                    </li>
+                        {% if request.path == "/time-attack" %}
+                        <li class="nav-item ms-2">
+                            <a class="nav-link" href="/">
+                                <i class="fa-solid fa-rotate" title="Swap To Normal Mode"> Mode</i>
+                            </a>
+                        </li>
+                        {% elif request.path == "/" %}
+                        <li class="nav-item ms-2">
+                            <a class="nav-link" href="/time-attack">
+                                <i class="fa-solid fa-rotate" title="Swap To Time-Attack Mode"> Mode</i>
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="nav-item ms-2 h4">
+                            <a class="nav-link" href="/">
+                                <i class="fa-solid fa-couch" title="Normal Mode"></i>
+                            </a>
+                        </li>
+                        <li class="nav-item ms-2 h4">
+                            <a class="nav-link" href="/time-attack">
+                                <i class="fa-solid fa-stopwatch" title="Time-Attack Mode"></i>
+                            </a>
+                        </li>
+                        {% endif %}
                     <li class="nav-item ms-2">
                         <a href="/profile/{{g.user.id}}">
-                            <img class="pfp-navbar" src="{{g.user.img_url}}" alt="Your profile picture">
+                            <img class="pfp-navbar" src="{{g.user.img_url}}" alt="Your profile picture" title="Profile">
                         </a>
                     </li>
                     <li class="nav-item ms-2">
