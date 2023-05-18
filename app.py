@@ -1,6 +1,6 @@
 import os
 import requests
-from flask import Flask, request, render_template, flash, redirect, session, g, jsonify
+from flask import Flask, render_template, flash, redirect, session, g, jsonify
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 from forms import UserAddForm, LoginForm, EditUserForm
@@ -59,6 +59,19 @@ def homepage():
     """Homepage - Games take place here"""
     pkmn = pokemon_list
     return render_template('game.html', pkmn=pkmn)
+
+@app.route("/time-attack")
+def altGameMode():
+    """
+    Hard mode of regular gameplay. Only 10 guesses allowed. 2 minutes to play before loss. Timer pauses during API calls
+    Account required to play. Redirected to signup if not signed in
+    """
+    pkmn = pokemon_list
+    if not g.user:
+        flash("Unauthorized. Account required to play time-attack", "danger")
+        return redirect("/signup")
+    
+    return render_template('game-2.html', pkmn=pkmn)
 
 
 @app.route("/login", methods=['GET', 'POST'])
@@ -149,6 +162,26 @@ def user_profile(user_id):
     choices = [(idx, f"{idx} - {pkmn}") for (idx, pkmn) in enumerate(['None'] + pokemon_list[:])]
     form.fav_pkmn.choices = choices
     
+    all_games = Game.query.filter(Game.user_id == g.user.id)
+
+    games_played    = all_games.count()
+    games_won       = all_games.filter(Game.outcome == True).count()
+    games_lost      = games_played - games_won
+    
+    sum_guesses = 0
+    for game in all_games:
+        sum_guesses += game.score
+    
+    game_best       = all_games.order_by(Game.score).first()
+
+    user_stats = {
+        "game_count" : games_played,
+        "win_count"  : games_won,
+        "loss_count" : games_lost,
+        "guess_count": sum_guesses,
+        "best_score" : game_best.score
+    }
+    
     if form.validate_on_submit():
         # Validate user
         user = User.authenticate(g.user.username, form.password.data)
@@ -178,15 +211,31 @@ def user_profile(user_id):
     # Must be after form validation or will not update
     junk, fav_pokemon = choices[g.user.fav_pkmn]
     
-    return render_template('profile.html', form=form, fav_pokemon=fav_pokemon)
+    return render_template('profile.html', form=form, fav_pokemon=fav_pokemon, user_stats=user_stats)
 
 @app.route("/leaderboard")
 def leaderboard():
     """Display leaderboards for all players"""
-    print("session['poke']", session['poke'])
-    return render_template('leaderboard.html')
+    top_scores = Game.query.order_by(Game.score).limit(25).all()
 
-# Routes for game to keep track of data on server through session
+    return render_template('leaderboard.html', top_scores=top_scores)
+
+@app.route("/profile/delete", methods=["POST"])
+def deleteAccount():
+    '''Delete the user's profile & redirect them to the signup page afterwards. If unauthorized, simply redirect to "/"'''
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+    
+    do_logout()
+
+    db.session.delete(g.user)
+    db.session.commit()
+
+    return redirect("/signup")
+
+# Routes for game to keep track of data on server through session, necessary for the game to work
 # ////////////////////////////////////////////////////////////////
 @app.route("/random-pokemon", methods=['POST'])
 def setRandomPoke():
@@ -254,13 +303,15 @@ def getGuessCounter():
 
     return jsonify(counter_resp)
 
-@app.route("/submit-game", methods=["POST"])
-def submitScore():
+@app.route('/submit-game/<int:mode>', methods=["POST"])
+def submitScore(mode):
     if not g.user:
         return jsonify("Login to submit your score!")
-    score = session['guess_counter']
-    mode = 1
     outcome = session['victory']
+    score = session['guess_counter']
+    # Penalize loss with +100 to score
+    if outcome == False:
+        score += 100
     newScore = Game(
         user_id = g.user.id,
         score = score,
@@ -291,7 +342,8 @@ def buildPokemon(dex_num):
     egg2 = "None" if(len(resp_spec['egg_groups']) == 1) else resp_spec["egg_groups"][1]["name"]
     color = resp_spec['color']['name']
 
-    print("S - BUILT ",pokemon_list[dex_num - 1].title() )
+    # Cheat/reference for testing, prints to terminal for reference
+    print(f"{g.user.username} - BUILT",pokemon_list[dex_num - 1])
 
     return {
         "Name"  : pokemon_list[dex_num - 1].title(),
