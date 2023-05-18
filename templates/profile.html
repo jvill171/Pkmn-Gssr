@@ -1,11 +1,40 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1 class="my-3">{{g.user.username}}'s profile</h1>
 
+<h1 class="my-3">{{g.user.username}}'s profile</h1>
 <p><b class="h5 text-primary">E-mail</b>: {{g.user.email}}</p>
 <p><b class="h5 text-primary">Favorite Pokemon</b>: {{fav_pokemon}}</p>
-
+<form action="/profile/delete" method="POST">
+    <button id="btn-delete" class="btn btn-lg btn-danger"><i class="fa-regular fa-trash-can"></i> Delete account</button>
+</form>
+<table class="table table-bordered table-striped text-center my-4">
+    <thead class="table-light">
+        <th colspan="2">Game Stats</th>
+    </thead>
+    <tbody>
+        <tr class="table-warning">
+            <td><b>Best Score</b></td>
+            <td>Victory in {{user_stats["best_score"]}} guesses</td>
+        </tr>
+        <tr class="table-success">
+            <td><b>Total Game Wins</b></td>
+            <td>{{user_stats["win_count"]}}</td>
+        </tr>
+        <tr class="table-danger">
+            <td><b>Total Game Losses</b></td>
+            <td>{{user_stats["loss_count"]}}</td>
+        </tr>
+        <tr class="table-info">
+            <td><b>Games Played</b></td>
+            <td>{{user_stats["game_count"]}}</td>
+        </tr>
+        <tr class="table-primary">
+            <td><b>Total Guesses Made</b></td>
+            <td>{{user_stats["guess_count"]}}</td>
+        </tr>
+    </tbody>
+</table>
 <hr>
 <form action="/profile/{{g.user.id}}" method="POST">
     {{ form.hidden_tag() }}
@@ -30,6 +59,5 @@
     {% endfor %}
     <button class="btn btn-lg btn-primary">Submit</button>
 </form>
-
 
 {% endblock %}
