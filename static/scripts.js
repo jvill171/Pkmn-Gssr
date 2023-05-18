@@ -9,7 +9,7 @@ const shapeList = document.querySelector(".pkmn-shapes")
 
 const pkmnGuessAdded = new Event("pkmn-guess-made");
 let maxGuess = document.querySelector(".score-limit")
-let lastGuess
+const gameMode = $(".game_timer").length == 0 ? 1 : 2;
 
 const orderData = ["Name",  "Image",  "Gen",  "Egg1",  "Egg2",  "Color",  "Shape",  "Type1",  "Type2", ]
 
@@ -124,6 +124,12 @@ guessbtn.addEventListener('click', (e)=>{
         makeGuess(input.value);
         $("#pkmn-guess").prop("disabled", true).css("color", "white")
         input.value = `Guessing ${input.value}...` 
+
+        if($(".all-guesses").children().length == 0){
+            if($(".game_timer").length){
+                startTimer()
+            }
+        }
     }
     else{
         $noPokeWarn
@@ -135,6 +141,7 @@ guessbtn.addEventListener('click', (e)=>{
 document.addEventListener("pkmn-guess-made",()=>{
     $("#pkmn-guess").prop("disabled", false).css("color", "black").focus()
     input.value = ''
+    resumeTimer()
 })
 
 newGameBtn.addEventListener('click',(e)=>{
@@ -173,6 +180,9 @@ function resetGame(){
     
     $(".end-status").addClass("hidden-item")
                     .removeClass(["text-danger", "text-success"])
+    if(gameMode == 2){
+        resetTimer()
+    }
 
 }
 
@@ -285,6 +295,10 @@ function generateRandPkmn(){
 }
 // Make a guess
 function makeGuess(pkmnName){
+    if(gameMode == 2){
+        pauseTimer()
+    }
+
     clearSuggestion();
     myName =  makeCapitalized(pkmnName.toLowerCase())
     if (allPokemon.includes(myName)){
@@ -365,18 +379,13 @@ function checkGuessData(gData){
             $elem.removeClass("neutral-item")
         }
     }
-    document.dispatchEvent(pkmnGuessAdded)
 
     addGuessCount(gData)
     if(gData["Name"][1] == "OK"){
-        axios.get('/get-answer')
-        .then(async (response) => {
-            if(response.status == 200){
-                let guessResp = await response.data
-                gameEnd(guessResp, gData["Name"][0])
-            }
-        })
+        endAnswer(gData["Name"][0])
     }
+
+    document.dispatchEvent(pkmnGuessAdded)
 }
 
 // Add guess server-side; If limit reached, gameEnd()
@@ -389,26 +398,30 @@ async function addGuessCount(gData){
     })
     .then(()=>{
         if(Number($(".score").text()) == Number($(".score-limit").text())){
-            
-            axios.get('/get-answer')
-            .then(async (response) => {
-                if(response.status == 200){
-                    let guessResp = await response.data
-                    gameEnd(guessResp, gData["Name"][0])
-                }
-            })
+            endAnswer(gData["Name"][0])
         }
     })
 }
 
+function endAnswer(gName){
+    if(gameMode == 2){
+        stopTimer()
+    }
+    axios.get('/get-answer')
+    .then(async (response) => {
+        if(response.status == 200){
+            let guessResp = await response.data
+            gameEnd(guessResp, gName)
+        }
+    })
+
+}
+
 function gameEnd(answerName="Answer", gName="Guess"){
-
-    let score = $(".score").text()
-
     $("#pkmn-guess").prop("disabled", true).css("color", "white")
     $("#guess-btn").prop("disabled", true)
 
-    input.value = `Its ${answerName}!`
+    input.value = `Its... ${answerName}!`
     
     if(gName == answerName){
         $(".end-status").addClass("text-success")
@@ -422,18 +435,20 @@ function gameEnd(answerName="Answer", gName="Guess"){
                         .removeClass("hidden-item")
         $("#pkmn-guess").addClass("text-bg-danger")
     }
-    
-    axios.post("/submit-game")
+
+    axios.post(`/submit-game/${gameMode}`)
     .then(async response =>{
         await response.data
         $("#non-poke-warn").text(response.data).removeClass("hidden-item")
     })
-    
 }
 
 // Start building page components
 // ===================================
 document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        $(".flash-msgs").addClass("hidden-item")
+    }, 2000);
     getAllPokemon();
     genReferenceData();
     makeNewGame();
