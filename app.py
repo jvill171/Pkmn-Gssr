@@ -10,7 +10,6 @@ from random import randint
 from my_secrets import MY_SECRET_KEY, DB_NAME
 from pkmn_list import pokemon_list
 
-# from forms import 
 from models import db, connect_db
 
 CURR_USER_KEY = "curr_user"
@@ -344,7 +343,10 @@ def buildPokemon(dex_num):
     color = resp_spec['color']['name']
 
     # Cheat/reference for testing, prints to terminal for reference
-    print(f"{g.user.username} - BUILT",pokemon_list[dex_num - 1])
+    if(g.user):
+        print(f"{g.user.username} - BUILT",pokemon_list[dex_num - 1])
+    else:
+        print(f"guest - BUILT",pokemon_list[dex_num - 1])
 
     return {
         "Name"  : pokemon_list[dex_num - 1].title(),
