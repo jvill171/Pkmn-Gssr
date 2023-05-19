@@ -1,11 +1,5 @@
-const input = document.querySelector("#pkmn-guess")
-const suggestions = document.querySelector(".suggestions ul")
-const mySuggestions = document.getElementsByClassName("has-suggestions")
 const guessbtn = document.querySelector("#guess-btn")
 const newGameBtn = document.querySelector("#new-game-btn")
-
-const genList = document.querySelector(".pkmn-gens")
-const shapeList = document.querySelector(".pkmn-shapes")
 
 const pkmnGuessAdded = new Event("pkmn-guess-made");
 let maxGuess = document.querySelector(".score-limit")
@@ -15,100 +9,6 @@ const orderData = ["Name",  "Image",  "Gen",  "Egg1",  "Egg2",  "Color",  "Shape
 
 const BASE_API_URL = "https://pokeapi.co/api/v2"
 let guessList = []
-
-
-const typeColor_dict ={
-    "Normal": "#A8A77A",     "Fire": "#EE8130",   "Water": "#6390F0",      "Electric": "#F7D02C",
-    "Grass": "#7AC74C",      "Ice": "#96D9D6",    "Fighting": "#C22E28",   "Poison": "#A33EA1",
-    "Ground": "#E2BF65",     "Flying": "#A98FF3", "Psychic": "#F95587",    "Bug": "#A6B91A",
-    "Rock": "#B6A136",       "Ghost": "#735797",  "Dragon": "#6F35FC",     "Dark": "#705746",
-    "Steel": "#B7B7CE",      "Fairy": "#D685AD", "None": "#FFFFFF"}
-
-const eggColor_dict ={
-    "Monster": "#F54269",     "Water1": "#0000FF",   "Bug": "#89C499",      "Flying": "#60C9E0",
-    "Ground": "#B89858",      "Fairy": "#B889C4",    "Plant": "#009423",   "Humanshape": "#C7A28F",
-    "Water3": "#8080FF",     "Mineral": "#FF2B2B", "Indeterminate": "#5A728F",    "Water2": "#5454FF",
-    "Ditto": "#B561FF",       "Dragon": "#735797",  "No-eggs": "#454545",}
-
-const allGens = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII",]
-
-// Get a list of all pokemon to use with scripts
-const allPokemon = [];
-
-function getAllPokemon(){
-    $("#all-pkmn ul li").each(function() {
-        allPokemon
-            .push($(this)
-            .text())
-    });
-}
-
-
-// FUNCTIONS FOR GAME SEARCH BOX
-// ********************************************************
-// Results is populated with allPokemon, as long as not blank & a valid pokemon is found
-function search(str){
-    let results = [];
-    results = allPokemon.filter(val => {
-        if(str !== ''){
-            return val.toLowerCase().includes(str)
-        }
-    });
-    return results;
-}
-
-// Updates suggestions each key press
-function searchHandler(e){
-    clearSuggestion();
-    showSuggestions(search(input.value.toLowerCase()), input.value)
-}
-
-// Display suggestions
-function showSuggestions(results, inputVal){
-    results.every((val) => {
-        const newSTRONG = document.createElement("strong");
-        const newLI = document.createElement("li");
-        newLI.classList.add("has-suggestions")
-
-        const stylized_suggestion = makeStrong(val, inputVal);
-
-        newLI.append(stylized_suggestion[0])
-        newSTRONG.innerText = stylized_suggestion[1]
-        newLI.append(newSTRONG)
-        newLI.append(stylized_suggestion[2])
-
-        suggestions.append(newLI);
-        return val;
-    })
-}
-
-// Makes input = clicked sugestion & clears the suggestion list upon a suggestion being selected
-function useSuggestion(e){
-    input.value = e.target.closest('li').innerText;
-    clearSuggestion();
-}
-
-// Clears the list of suggestions
-function clearSuggestion(){
-    Array.from(mySuggestions).forEach(val => val.remove())
-}
-
-// Returns an array of a sliced suggestion. Slices occur at point where input matches suggestion
-function makeStrong(pkmnSuggestion, userInput){
-    const startSlice = pkmnSuggestion.toLowerCase().indexOf(input.value.toLowerCase());
-    const endSlice = startSlice + userInput.length;
-
-    return [pkmnSuggestion.slice(0,startSlice),
-            pkmnSuggestion.slice(startSlice, endSlice),
-            pkmnSuggestion.slice(endSlice, pkmnSuggestion.length)]
-}
-
-
-// EVENT LISTENRS
-// ************************************
-input.addEventListener('keyup', searchHandler);
-
-suggestions.addEventListener('mouseup', useSuggestion)
 
 guessbtn.addEventListener('click', (e)=>{
     e.preventDefault()
@@ -200,100 +100,6 @@ function makeCapitalized(word){
         words[idx] = cVal.charAt(0).toUpperCase() + cVal.slice(1)
     })
     return words.join(' ')
-}
-
-// FUNCTIONS FOR GENERATING GAME'S ICON LIST
-// ********************************************************
-// Pokemon Generations
-async function getGens(){
-    for(idx in allGens){
-        let newLI = document.createElement('li')
-        newLI.innerText = allGens[idx]
-        newLI.classList.add(`Gen-${allGens[idx]}`)
-        newLI.classList.add("neutral-item")
-        genList.append(newLI)
-    }
-}
-
-// Pokemon Types
-async function getTypes(){
-    let nonTypes = ['unknown', 'shadow']
-
-    let resp = await axios.get(`${BASE_API_URL}/type`)
-
-    for(type of resp.data.results){
-        // Exclude non-standard pokemon types
-        if(!(nonTypes.includes(type.name))){
-
-            capType = makeCapitalized(type.name)
-            $(".pkmn-types").append(
-                `<li class=" Type-${capType} neutral-item" style="background-color: ${typeColor_dict[`${capType}`]};">${capType}</li>`)
-        }
-    }
-    $(".pkmn-types").append(
-        `<li class="neutral-item Type-None" style="background-color: #000000;">Single</li>`
-    )
-    
-}
-
-// Pokemon Shapes
-async function getShapes(){
-    let resp = await axios.get(`${BASE_API_URL}/pokemon-shape`)
-    for(shape of resp.data.results){
-        let newIMG = document.createElement('img')
-        newIMG.src = `/static/images/shapes/${shape.name}.png`
-        newIMG.classList.add("neutral-item")
-        newIMG.classList.add(`Shape-${shape.name}`)
-        shapeList.append(newIMG)
-    }
-}
-
-// Pokemon Colors
-async function getColors(){
-    let resp = await axios.get(`${BASE_API_URL}/pokemon-color`)
-    for(color of resp.data.results){
-        const capColor = makeCapitalized(color.name)
-        let pkmnBgColor;
-        
-        switch(capColor){
-            case "Brown":
-                pkmnBgColor = typeColor_dict['Rock']
-                break;
-            case "Green":
-                pkmnBgColor = typeColor_dict['Grass']
-                break;
-            case "White":
-                pkmnBgColor = "#F5F5F5"
-                break;
-            default:
-                pkmnBgColor = capColor
-                break;
-        }
-        $('.pkmn-colors').append(
-            `<li class="neutral-item Color-${capColor}" style="background-color: ${pkmnBgColor};">${capColor}</li>`)
-    }
-}
-// Pokemon Egg Groups
-async function getEggs(){
-    let resp = await axios.get(`${BASE_API_URL}/egg-group`)
-    for(egg of resp.data.results){
-        const capEgg = makeCapitalized(egg.name)
-
-        $(".pkmn-eggs").append(
-            `<li class="neutral-item Egg-${capEgg}" style="background-color: ${eggColor_dict[capEgg]}">${capEgg}</li>`)
-    }
-    $(".pkmn-eggs").append(
-        `<li class="neutral-item Egg-None" style="background-color: #000000;">Single-Egg</li>`
-    )
-}
-
-// Call all functions to generate reference data
-function genReferenceData(){
-    getGens()
-    getTypes();
-    getShapes();
-    getColors();
-    getEggs();
 }
 
 // FUNCTIONS GENERATING POKEMON & RETRIEVEING POKEMON FROM GUESSES
@@ -470,10 +276,6 @@ function gameEnd(answerName="Answer", gName="Guess"){
 // Start building page components
 // ===================================
 document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => {
-        $(".flash-msgs").addClass("hidden-item")
-    }, 2000);
-    getAllPokemon();
     genReferenceData();
     makeNewGame();
   })
