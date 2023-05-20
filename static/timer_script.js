@@ -34,5 +34,5 @@ function resumeTimer(){
 function resetTimer(){
     clearInterval(timerCountdown)
     $("#guess-btn").prop("disabled",false).text("Submit")
-    $timer.text(120)
+    $timer.text(180)
 }
