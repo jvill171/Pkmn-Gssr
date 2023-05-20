@@ -1,0 +1,13 @@
+
+<div class="bg-light text-dark p-3 rounded-5">
+    <h4>Hesitent to sign up?
+        {% if request.path == "/login" %}
+            Log in
+        {% else %}
+            <a href="/login">Log in</a>
+        {% endif %}
+        with these credentials:</h4>
+    <p class="my-1"><b class="text-primary">username:</b> PkmnGssr</p>
+    <p class="my-1"><b class="text-primary">password:</b> pokemonguesser</p>
+    <small class="bg-warning px-2 py-1"><b>Note:</b> This user cannot have its password updated or be deleted. It is purely for showcasing this app.</small>
+</div>
