@@ -65,7 +65,7 @@ def homepage():
 @app.route("/time-attack")
 def altGameMode():
     """
-    Hard mode of regular gameplay. Only 10 guesses allowed. 2 minutes to play before loss. Timer pauses during API calls
+    Hard mode of regular gameplay. Timer pauses during API calls
     Account required to play. Redirected to signup if not signed in
     """
     pkmn = pokemon_list
@@ -79,6 +79,9 @@ def altGameMode():
 @app.route("/login", methods=['GET', 'POST'])
 def login():
     """Handle a user attempting to log in"""
+    if g.user:
+        return redirect (f"/profile/{g.user.id}")
+    
     form=LoginForm()
     
     if form.validate_on_submit():
@@ -103,6 +106,8 @@ def logout():
 @app.route("/signup", methods=['GET', 'POST'])
 def signup():
     """Handle a user signing up. Also determines which pokemon is the user's favorite pokemon"""
+    if g.user:
+        return redirect (f"/profile/{g.user.id}")
 
     form=UserAddForm()
     form.fav_pkmn.choices = [(idx, f"{idx} - {pkmn}") for (idx, pkmn) in enumerate(['None'] + pokemon_list[:])]
@@ -156,12 +161,12 @@ def getProfileStats(id):
     # No data to calculate with yet
     if(all_games.count() == 0):
         return {
-        "game_count"    : 0,
-        "win_count"     : 0,
-        "loss_count"    : 0,
-        "guess_count"   : 0,
-        "best_score"    : 0,
-    }
+            "game_count"    : 0,
+            "win_count"     : 0,
+            "loss_count"    : 0,
+            "guess_count"   : 0,
+            "best_score"    : 0,
+        }
 
     games_played    = all_games.count()
     games_won       = all_games.filter(Game.outcome == True).count()
@@ -169,10 +174,8 @@ def getProfileStats(id):
     
     sum_guesses = 0
     for game in all_games:
-        sum_guesses += game.score
         # Account for +100 score penalty if loss
-        sum_guesses -= (games_lost * 100)
-    
+        sum_guesses += (game.score - (games_lost * 100))
     game_best       = all_games.order_by(Game.score).first()
 
     return{
@@ -182,7 +185,6 @@ def getProfileStats(id):
         "guess_count"   : sum_guesses,
         "best_score"    : game_best.score,
     }
-
 
 @app.route("/profile/<int:user_id>", methods=['GET', 'POST'])
 def user_profile(user_id):
