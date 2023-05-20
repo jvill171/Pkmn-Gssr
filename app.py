@@ -15,6 +15,9 @@ from models import db, connect_db
 CURR_USER_KEY = "curr_user"
 BASE_API_URL = "https://pokeapi.co/api/v2/"
 COUNTER_LIMIT = 15
+DEFAULT_PFP = '/static/images/pokeball.png'
+# password set to: pokemonguesser
+SANDBOX_USER = "PkmnGssr"
 
 app = Flask(__name__)
 app.app_context().push()
@@ -146,6 +149,40 @@ def signup():
         
     return render_template('signup.html', form=form)
 
+def getProfileStats(id):
+    """Generate & return a dictionary object with player stats to display on profile"""
+    all_games = Game.query.filter(Game.user_id == id)
+    
+    # No data to calculate with yet
+    if(all_games.count() == 0):
+        return {
+        "game_count"    : 0,
+        "win_count"     : 0,
+        "loss_count"    : 0,
+        "guess_count"   : 0,
+        "best_score"    : 0,
+    }
+
+    games_played    = all_games.count()
+    games_won       = all_games.filter(Game.outcome == True).count()
+    games_lost      = games_played - games_won
+    
+    sum_guesses = 0
+    for game in all_games:
+        sum_guesses += game.score
+        # Account for +100 score penalty if loss
+        sum_guesses -= (games_lost * 100)
+    
+    game_best       = all_games.order_by(Game.score).first()
+
+    return{
+        "game_count"    : games_played,
+        "win_count"     : games_won,
+        "loss_count"    : games_lost,
+        "guess_count"   : sum_guesses,
+        "best_score"    : game_best.score,
+    }
+
 
 @app.route("/profile/<int:user_id>", methods=['GET', 'POST'])
 def user_profile(user_id):
@@ -161,51 +198,39 @@ def user_profile(user_id):
     choices = [(idx, f"{idx} - {pkmn}") for (idx, pkmn) in enumerate(['None'] + pokemon_list[:])]
     form.fav_pkmn.choices = choices
     
-    all_games = Game.query.filter(Game.user_id == g.user.id)
-
-    games_played    = all_games.count()
-    games_won       = all_games.filter(Game.outcome == True).count()
-    games_lost      = games_played - games_won
-    
-    sum_guesses = 0
-    for game in all_games:
-        sum_guesses += game.score
-    
-    game_best       = all_games.order_by(Game.score).first()
-
-    user_stats = {
-        "game_count" : games_played,
-        "win_count"  : games_won,
-        "loss_count" : games_lost,
-        "guess_count": sum_guesses,
-        "best_score" : game_best.score
-    }
+    user_stats = getProfileStats(g.user.id)
     
     if form.validate_on_submit():
         # Validate user
         user = User.authenticate(g.user.username, form.password.data)
         if(user):
             if(form.new_password.data):
-                pwd = form.new_password.data
-                User.update_pass(user, pwd)
+                if(g.user.username != SANDBOX_USER):
+                    User.update_pass(user, form.new_password.data)
+                else:
+                    flash("Not allowed to update this user's password due to being for sandbox use.", "primary")
             if(form.fav_pkmn.data != g.user.fav_pkmn):
                 g.user.fav_pkmn = form.fav_pkmn.data
                 
                 # Update image URL
                 if(form.fav_pkmn.data == 0):
-                    g.user.img_url = None
+                    g.user.img_url = DEFAULT_PFP
                 else:
                     try:
                         resp = requests.get(f"{BASE_API_URL}/pokemon/{form.fav_pkmn.data}")
                         img_data = resp.json()['sprites']['other']['official-artwork']
                         image_url = img_data['front_shiny'] if (randint(1, 512) == 512) else img_data['front_default']
                     except:
-                        image_url = None
+                        image_url = DEFAULT_PFP
                         flash("An error occursed with your favorite pokemon. Default image set.", "danger")
                     g.user.img_url = image_url
-                
-            g.user.email = form.email.data
-        db.session.commit()
+            
+            try:
+                g.user.email = form.email.data
+                db.session.commit()
+            except IntegrityError as e:
+                flash("E-mail already exists!", "danger")
+                db.session.rollback()
 
     # Must be after form validation or will not update
     junk, fav_pokemon = choices[g.user.fav_pkmn]
@@ -230,8 +255,11 @@ def deleteAccount():
     
     do_logout()
 
-    db.session.delete(g.user)
-    db.session.commit()
+    if(g.user.username != SANDBOX_USER):
+        db.session.delete(g.user)
+        db.session.commit()
+    else:
+        flash(f"{SANDBOX_USER} not deleted due to being for sandbox use.", "primary")
 
     return redirect("/signup")
 
