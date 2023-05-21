@@ -23,100 +23,107 @@
   width: 100%;
 }
 
-  ::placeholder{
-    color: rgb(172, 172, 172)
-  }
-  :focus {
-    outline:none;
-    border-color: black;
-    background-color: rgb(45, 109, 206);
-  }
-  input {
-    padding:0.4rem;
-    background-color: rgb(68, 95, 136);
-    text-align: center;
-    font-weight: 600;
-  }
+::placeholder{
+  color: rgb(172, 172, 172)
+}
+:focus {
+  outline:none;
+  border-color: black;
+  background-color: rgb(45, 109, 206);
+}
+input {
+  padding:0.4rem;
+  background-color: rgb(68, 95, 136);
+  text-align: center;
+  font-weight: 600;
+}
 
-  .suggestions ul li {
-    background-color: rgb(68, 95, 136);
-    list-style: none;
-    margin:0;
-    border-style: solid none none none;
-    border-color: black;
-    border-width: 1px;
-    height: 1.5em;
-  }
+.suggestions ul li {
+  background-color: rgb(68, 95, 136);
+  list-style: none;
+  margin:0;
+  border-style: solid none none none;
+  border-color: black;
+  border-width: 1px;
+  height: 1.5em;
+}
 
-  .suggestions ul li:hover {
-    background-color: black;
-    cursor: pointer;
-  }
+.suggestions ul li:hover {
+  background-color: black;
+  cursor: pointer;
+}
 
-  .pkmn-types > *,   .pkmn-colors > *, .pkmn-eggs > *{
-    display: inline-block;
-    width: 80px;
-    padding: 0 5px;
-    margin: 5px;
-    border: 1px solid black;
-    background-color: rgb(107, 107, 107);
-    border-radius: 5px;
-    text-shadow: black 0 0 5px;
-  }
-  .pkmn-eggs > *{
-    width: 120px;
-  }
+.pkmn-types > *,   .pkmn-colors > *, .pkmn-eggs > *{
+  display: inline-block;
+  width: 80px;
+  padding: 0 5px;
+  margin: 5px;
+  border: 1px solid black;
+  background-color: rgb(107, 107, 107);
+  border-radius: 5px;
+  text-shadow: black 0 0 5px;
+}
+.pkmn-eggs > *{
+  width: 120px;
+}
 
-  .pkmn-shapes img, #guess-table img{
-    background-color: white;
-    border-radius: 50%;
-    width: 45px;
-    height: 45px;
-    padding: 5px;
-    margin: 5px;
-  }
+.pkmn-shapes img, #guess-table img{
+  background-color: white;
+  border-radius: 50%;
+  width: 45px;
+  height: 45px;
+  padding: 5px;
+  margin: 5px;
+}
 
-  .pkmn-gens > li{
-    background-color: rgb(45, 45, 45);
-    display: inline-block;
-    width: 50px;
-    border-radius: 5px;
-    padding: 5px;
-    margin: 5px;
-  }
+.pkmn-gens > li{
+  background-color: rgb(45, 45, 45);
+  display: inline-block;
+  width: 50px;
+  border-radius: 5px;
+  padding: 5px;
+  margin: 5px;
+}
 
-  nav li *:hover{
-    scale: 110%;
-  }
-  
-  #guess-table th, #guess-table td{
-    border: 1px solid white;
-  }
-  #guess-table td{
-    text-shadow: black 0 0 5px;
-  }
-  th{
-    color: black;
-    background-color: white;
-  }
+nav li *:hover{
+  scale: 110%;
+}
 
-  .hidden-item{
-    display: none;
-  }
-  .neutral-item{
-    border: 1px solid black;
-  }
-  .good-item{
-    border: 4px solid green;
-    font-weight : bold;
-    box-shadow: rgb(0, 110, 15) 0 0 10px;
-    padding-top: 0;
-    padding-bottom: 0;
-  }
-  .bad-item{
-    opacity: .5;
-    text-decoration: line-through;
-    color: black;
-    text-shadow: rgb(255, 255, 255) 0 0 10px;
-    box-shadow: rgb(192, 0, 0) 0 0 10px;
-  }
+#guess-table th, #guess-table td{
+  border: 1px solid white;
+}
+#guess-table td{
+  text-shadow: black 0 0 5px;
+}
+th{
+  color: black;
+  background-color: white;
+}
+
+.hidden-item{
+  display: none;
+}
+.neutral-item{
+  border: 1px solid black;
+}
+.good-item{
+  border: 4px solid green;
+  font-weight : bold;
+  box-shadow: rgb(0, 110, 15) 0 0 10px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.bad-item{
+  opacity: .5;
+  text-decoration: line-through;
+  color: black;
+  text-shadow: rgb(255, 255, 255) 0 0 10px;
+  box-shadow: rgb(192, 0, 0) 0 0 10px;
+}
+
+.footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+}

@@ -63,13 +63,16 @@
             </ul>
         </div>
     </nav>
-    <div class="container">
+    <div class="container pb-5">
         {% for category, message in get_flashed_messages(with_categories=True) %}
             <div class="flash-msgs alert alert-{{ category }} border border-{{ category }} mt-2 rounded-0">{{ message }}</div>
         {% endfor %}
         
         {% block content %}{% endblock %}
     </div>
+    <footer class="footer bg-dark-subtle text-dark text-center m-0">
+        <p class="p-1 m-0">View this project on <a href="https://github.com/jvill171/Pkmn-Gssr.git">Github</a></p>
+    </footer>
     {% block scripts %}{% endblock %}
 </body>
 </html>
