@@ -29,7 +29,7 @@ class User(db.Model):
     def update_pass(self, user, new_password):
         """Returns encrypted password for updating user on flask"""
         user.password = bcrypt.generate_password_hash(new_password).decode('UTF-8')
-        flash("Password updated!")
+        flash("Password updated!", "success")
     
     @classmethod
     def signup(cls, username, email, password, img_url, favorite):
