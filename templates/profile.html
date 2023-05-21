@@ -5,9 +5,7 @@
 <h1 class="my-3">{{g.user.username}}'s profile</h1>
 <p><b class="h5 text-primary">E-mail</b>: {{g.user.email}}</p>
 <p><b class="h5 text-primary">Favorite Pokemon</b>: {{fav_pokemon}}</p>
-<form action="/profile/delete" method="POST">
-    <button id="btn-delete" class="btn btn-lg btn-danger"><i class="fa-regular fa-trash-can"></i> Delete account</button>
-</form>
+
 <table class="table table-bordered table-striped text-center my-4">
     <thead class="table-light">
         <th colspan="2">Game Stats</th>
@@ -35,11 +33,31 @@
         </tr>
     </tbody>
 </table>
-<hr>
-<form action="/profile/{{g.user.id}}" method="POST">
-    {{ form.hidden_tag() }}
+
+<hr class="text-danger">
+<form class="bg-danger-subtle p-3 text-dark rounded-2" action="/profile/delete" method="POST">
+    {{ del_form.hidden_tag() }}
     
-    {% for field in form
+    {% for field in del_form
+        if field.widget.input_type != 'hidden' %}
+        <div class="form-group mb-4">
+            {{ field.label }}
+            {{ field(class="form-control text-start") }}
+            <span>
+            {% for error in field.errors %}
+                <b class="text-danger">{{ error }}</b>
+            {% endfor %}
+            </span>
+        </div>
+    {% endfor %}
+    <button id="btn-delete" class="btn btn-lg btn-danger"><i class="fa-regular fa-trash-can"></i> Delete account</button>
+</form>
+<hr class="text-danger">
+
+<form action="/profile/{{g.user.id}}" method="POST">
+    {{ edit_form.hidden_tag() }}
+    
+    {% for field in edit_form
         if field.widget.input_type != 'hidden' %}
         <div class="form-group mb-4">
             {% if field.label.text == 'Current password' %}
@@ -57,7 +75,7 @@
             </span>
         </div>
     {% endfor %}
-    <button class="btn btn-lg btn-primary">Submit</button>
+    <button class="btn btn-lg btn-primary">Update</button>
 </form>
 
 {% endblock %}
