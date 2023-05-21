@@ -35,3 +35,8 @@ class EditUserForm(FlaskForm):
                              validators=[Optional()])
 
     password = PasswordField('Current password', validators=[Length(min=6)])
+
+class DeleteUserForm(FlaskForm):
+    """Form for deleting a user"""
+
+    password = PasswordField('Type your current password to confirm deletion of your account', validators=[Length(min=6)])
