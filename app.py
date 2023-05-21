@@ -3,7 +3,7 @@ import requests
 from flask import Flask, render_template, flash, redirect, session, g, jsonify
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
-from forms import UserAddForm, LoginForm, EditUserForm
+from forms import UserAddForm, LoginForm, EditUserForm, DeleteUserForm
 from models import User, Game
 from random import randint
 
@@ -164,31 +164,33 @@ def user_profile(user_id):
         return redirect("/")
 
     user = User.query.get_or_404(user_id)
-    form=EditUserForm(obj=user)
+    del_form = DeleteUserForm()
+    edit_form=EditUserForm(obj=user)
 
     choices = [(idx, f"{idx} - {pkmn}") for (idx, pkmn) in enumerate(['None'] + pokemon_list[:])]
-    form.fav_pkmn.choices = choices
+    edit_form.fav_pkmn.choices = choices
     
     user_stats = getProfileStats(g.user.id)
     
-    if form.validate_on_submit():
+    if edit_form.validate_on_submit():
+        print("edit valid")
         # Validate user
-        user = User.authenticate(g.user.username, form.password.data)
+        user = User.authenticate(g.user.username, edit_form.password.data)
         if(user):
-            if(form.new_password.data):
+            if(edit_form.new_password.data):
                 if(g.user.username != SANDBOX_USER):
-                    User.update_pass(user, form.new_password.data)
+                    User.update_pass(user, edit_form.new_password.data)
                 else:
                     flash("Not allowed to update this user's password due to being for sandbox use.", "primary")
-            if(form.fav_pkmn.data != g.user.fav_pkmn):
-                g.user.fav_pkmn = form.fav_pkmn.data
+            if(edit_form.fav_pkmn.data != g.user.fav_pkmn):
+                g.user.fav_pkmn = edit_form.fav_pkmn.data
                 
                 # Update image URL
-                if(form.fav_pkmn.data == 0):
+                if(edit_form.fav_pkmn.data == 0):
                     g.user.img_url = DEFAULT_PFP
                 else:
                     try:
-                        resp = requests.get(f"{BASE_API_URL}/pokemon/{form.fav_pkmn.data}")
+                        resp = requests.get(f"{BASE_API_URL}/pokemon/{edit_form.fav_pkmn.data}")
                         img_data = resp.json()['sprites']['other']['official-artwork']
                         image_url = img_data['front_shiny'] if (randint(1, 512) == 512) else img_data['front_default']
                     except:
@@ -197,16 +199,16 @@ def user_profile(user_id):
                     g.user.img_url = image_url
             
             try:
-                g.user.email = form.email.data
+                g.user.email = edit_form.email.data
                 db.session.commit()
             except IntegrityError as e:
                 flash("E-mail already exists!", "danger")
                 db.session.rollback()
 
-    # Must be after form validation or will not update
+    # Must be after edit_form validation or will not update
     junk, fav_pokemon = choices[g.user.fav_pkmn]
     
-    return render_template('profile.html', form=form, fav_pokemon=fav_pokemon, user_stats=user_stats)
+    return render_template('profile.html', del_form=del_form, edit_form=edit_form, fav_pokemon=fav_pokemon, user_stats=user_stats)
 
 @app.route("/leaderboard")
 def leaderboard():
@@ -220,19 +222,26 @@ def leaderboard():
 def deleteAccount():
     '''Delete the user's profile & redirect them to the signup page afterwards. If unauthorized, simply redirect to "/"'''
 
+    form = DeleteUserForm()
+
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
     
-    do_logout()
+    if form.validate_on_submit():
+        user = User.authenticate(g.user.username, form.password.data)
+        if(user):
+            do_logout()
 
-    if(g.user.username != SANDBOX_USER):
-        db.session.delete(g.user)
-        db.session.commit()
-    else:
-        flash(f"{SANDBOX_USER} not deleted due to being for sandbox use.", "primary")
+            if(g.user.username != SANDBOX_USER):
+                db.session.delete(g.user)
+                db.session.commit()
+                flash("Account Deleted.", "info")
+            else:
+                flash(f"{SANDBOX_USER} not deleted due to being for sandbox use.", "primary")
 
-    return redirect("/signup")
+            return redirect("/signup")
+    return redirect(f"/profile/{g.user.id}")
 
 # Routes for game to keep track of data on server through session, necessary for the game to work
 # ////////////////////////////////////////////////////////////////
